@@ -1,1 +1,262 @@
+tạo toàn bộ được không ?
+
+
+ChatGPT đã nói:
+Tuyệt vời! Dưới đây là toàn bộ hệ thống quản lý đơn nghỉ phép đơn giản bằng Java Console gồm các file Java cần thiết. Mỗi class sẽ nằm trong một file riêng, bạn chỉ cần copy/paste đúng tên file tương ứng để chạy toàn bộ hệ thống.
+
+📁 Cấu trúc file
+pgsql
+Sao chép
+Chỉnh sửa
+LeaveSystem/
+├── LeaveSystem.java
+├── User.java
+└── LeaveRequest.java
+✅ 1. User.java
+java
+Sao chép
+Chỉnh sửa
+public class User {
+    String username;
+    String password;
+    String role;
+    String department;
+    User manager;
+
+    public User(String username, String password, String role, String department, User manager) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.department = department;
+        this.manager = manager;
+    }
+
+    public boolean isManager() {
+        return role.equals("Quản lý trực tiếp") || role.equals("Quản lý phòng ban");
+    }
+
+    @Override
+    public String toString() {
+        return username + " - " + role + " - " + department;
+    }
+}
+✅ 2. LeaveRequest.java
+java
+Sao chép
+Chỉnh sửa
+import java.time.LocalDate;
+
+public class LeaveRequest {
+    public enum Status { INPROGRESS, APPROVED, REJECTED }
+
+    String title;
+    LocalDate fromDate;
+    LocalDate toDate;
+    String reason;
+    User createdBy;
+    User processedBy;
+    Status status;
+
+    public LeaveRequest(String title, LocalDate fromDate, LocalDate toDate, String reason, User createdBy) {
+        this.title = title;
+        this.fromDate = fromDate;
+        this.toDate = toDate;
+        this.reason = reason;
+        this.createdBy = createdBy;
+        this.status = Status.INPROGRESS;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + status + "] " + title + " (" + fromDate + " -> " + toDate + "), tạo bởi: " +
+               createdBy.username + ", xử lý bởi: " +
+               (processedBy != null ? processedBy.username : "chưa xử lý");
+    }
+}
+✅ 3. LeaveSystem.java
+java
+Sao chép
+Chỉnh sửa
+import java.time.LocalDate;
+import java.util.*;
+
+public class LeaveSystem {
+    private static final Scanner sc = new Scanner(System.in);
+    private static final List<User> users = new ArrayList<>();
+    private static final List<LeaveRequest> requests = new ArrayList<>();
+    private static User currentUser = null;
+
+    public static void main(String[] args) {
+        initData();
+        login();
+        menu();
+    }
+
+    static void initData() {
+        User manager = new User("mrB", "1234", "Quản lý trực tiếp", "IT", null);
+        User head = new User("mrA", "1234", "Quản lý phòng ban", "IT", null);
+        User emp1 = new User("mrF", "1234", "Nhân viên", "IT", manager);
+        User emp2 = new User("mrE", "1234", "Nhân viên", "IT", manager);
+
+        users.add(head);
+        users.add(manager);
+        users.add(emp1);
+        users.add(emp2);
+    }
+
+    static void login() {
+        while (true) {
+            System.out.print("Username: ");
+            String u = sc.nextLine();
+            System.out.print("Password: ");
+            String p = sc.nextLine();
+            for (User user : users) {
+                if (user.username.equals(u) && user.password.equals(p)) {
+                    currentUser = user;
+                    System.out.println("Đăng nhập thành công: " + user);
+                    return;
+                }
+            }
+            System.out.println("Sai tài khoản hoặc mật khẩu. Thử lại.");
+        }
+    }
+
+    static void menu() {
+        while (true) {
+            System.out.println("\n=== MENU ===");
+            System.out.println("1. Tạo đơn nghỉ phép");
+            System.out.println("2. Xem đơn của tôi");
+            if (currentUser.isManager()) {
+                System.out.println("3. Xem đơn của cấp dưới");
+                System.out.println("4. Duyệt đơn");
+            }
+            if ("Quản lý phòng ban".equals(currentUser.role)) {
+                System.out.println("5. Xem agenda");
+            }
+            System.out.println("0. Thoát");
+
+            System.out.print("Chọn: ");
+            int choice = Integer.parseInt(sc.nextLine());
+            switch (choice) {
+                case 1 -> createRequest();
+                case 2 -> viewMyRequests();
+                case 3 -> {
+                    if (currentUser.isManager()) viewSubordinateRequests();
+                }
+                case 4 -> {
+                    if (currentUser.isManager()) approveRequest();
+                }
+                case 5 -> {
+                    if ("Quản lý phòng ban".equals(currentUser.role)) viewAgenda();
+                }
+                case 0 -> {
+                    System.out.println("Thoát.");
+                    return;
+                }
+                default -> System.out.println("Lựa chọn không hợp lệ.");
+            }
+        }
+    }
+
+    static void createRequest() {
+        System.out.print("Tiêu đề: ");
+        String title = sc.nextLine();
+        System.out.print("Từ ngày (yyyy-mm-dd): ");
+        LocalDate from = LocalDate.parse(sc.nextLine());
+        System.out.print("Tới ngày (yyyy-mm-dd): ");
+        LocalDate to = LocalDate.parse(sc.nextLine());
+        System.out.print("Lý do: ");
+        String reason = sc.nextLine();
+
+        LeaveRequest req = new LeaveRequest(title, from, to, reason, currentUser);
+        requests.add(req);
+        System.out.println("Tạo đơn thành công.");
+    }
+
+    static void viewMyRequests() {
+        System.out.println("--- Đơn của tôi ---");
+        for (LeaveRequest r : requests) {
+            if (r.createdBy == currentUser) {
+                System.out.println(r);
+            }
+        }
+    }
+
+    static void viewSubordinateRequests() {
+        System.out.println("--- Đơn của cấp dưới ---");
+        for (LeaveRequest r : requests) {
+            if (r.createdBy.manager == currentUser) {
+                System.out.println(r);
+            }
+        }
+    }
+
+    static void approveRequest() {
+        List<LeaveRequest> pending = new ArrayList<>();
+        for (LeaveRequest r : requests) {
+            if (r.createdBy.manager == currentUser && r.status == LeaveRequest.Status.INPROGRESS) {
+                pending.add(r);
+            }
+        }
+        if (pending.isEmpty()) {
+            System.out.println("Không có đơn nào chờ xử lý.");
+            return;
+        }
+
+        for (int i = 0; i < pending.size(); i++) {
+            System.out.println((i + 1) + ". " + pending.get(i));
+        }
+        System.out.print("Chọn đơn để xử lý (0 để thoát): ");
+        int idx = Integer.parseInt(sc.nextLine());
+        if (idx == 0) return;
+
+        LeaveRequest selected = pending.get(idx - 1);
+        System.out.print("Duyệt (a) / Từ chối (r): ");
+        String act = sc.nextLine();
+
+        if (act.equalsIgnoreCase("a")) {
+            selected.status = LeaveRequest.Status.APPROVED;
+        } else {
+            selected.status = LeaveRequest.Status.REJECTED;
+        }
+        selected.processedBy = currentUser;
+        System.out.println("Đã xử lý đơn.");
+    }
+
+    static void viewAgenda() {
+        System.out.println("--- Agenda (demo) ---");
+        System.out.printf("%-10s %-15s\n", "Nhân viên", "Trạng thái");
+        for (User u : users) {
+            if (u.department.equals(currentUser.department)) {
+                boolean off = requests.stream()
+                    .anyMatch(r -> r.createdBy == u && r.status == LeaveRequest.Status.APPROVED);
+                System.out.printf("%-10s %-15s\n", u.username, off ? "Đang nghỉ" : "Đi làm");
+            }
+        }
+    }
+}
+🏁 Cách chạy chương trình
+Tạo thư mục LeaveSystem
+
+Đặt 3 file .java vào trong
+
+Biên dịch và chạy:
+
+bash
+Sao chép
+Chỉnh sửa
+javac *.java
+java LeaveSystem
+Bạn có muốn mình gói toàn bộ vào file .zip để tải về? Hoặc muốn nâng cấp lên giao diện JavaFX/Web/Spring Boot?
+
+
+2/2
+
+
+
+
+
+
+
+
 
