@@ -1,0 +1,21 @@
+📦 Project này bao gồm:
+Cấu trúc Spring Boot chuẩn (src/main/java, controller, model, service, repository)
+
+Cấu hình H2 database
+
+pom.xml đã sẵn sàng chạy với:
+
+Spring Boot Web
+
+Spring Data JPA
+
+H2 Database (chạy in-memory)
+
+▶️ Cách chạy
+Mở project bằng IntelliJ hoặc Spring Tool Suite
+
+Chạy class LeaveSystemApplication.java
+
+Truy cập http://localhost:8080
+
+Truy cập H2 console tại http://localhost:8080/h2-console (JDBC URL: jdbc:h2:mem:testdb)
