@@ -1,0 +1,210 @@
+Cảm ơn bạn đã chia sẻ đề bài. Dưới đây là phần khởi đầu của hệ thống quản lý đơn nghỉ phép bằng Java (console-based, dễ mở rộng sang Spring hoặc web framework sau). Hệ thống này sẽ bao gồm các chức năng:
+
+Xác thực người dùng
+
+Tạo đơn nghỉ phép
+
+Xem danh sách đơn nghỉ phép (của chính mình hoặc cấp dưới)
+
+Xét duyệt đơn (duyệt hoặc từ chối)
+
+Xem agenda tình hình nhân sự của phòng
+
+⚙ Cấu trúc lớp chính:
+java
+Sao chép
+Chỉnh sửa
+// User.java
+public class User {
+    String username;
+    String password;
+    String role;
+    String department;
+    User manager;
+
+    public User(String username, String password, String role, String department, User manager) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.department = department;
+        this.manager = manager;
+    }
+
+    public boolean isManager() {
+        return role.equals("Quản lý trực tiếp") || role.equals("Quản lý phòng ban");
+    }
+}
+java
+Sao chép
+Chỉnh sửa
+// LeaveRequest.java
+import java.time.LocalDate;
+
+public class LeaveRequest {
+    public enum Status { INPROGRESS, APPROVED, REJECTED }
+
+    String title;
+    LocalDate fromDate;
+    LocalDate toDate;
+    String reason;
+    User createdBy;
+    User processedBy;
+    Status status;
+
+    public LeaveRequest(String title, LocalDate fromDate, LocalDate toDate, String reason, User createdBy) {
+        this.title = title;
+        this.fromDate = fromDate;
+        this.toDate = toDate;
+        this.reason = reason;
+        this.createdBy = createdBy;
+        this.status = Status.INPROGRESS;
+    }
+}
+java
+Sao chép
+Chỉnh sửa
+// LeaveSystem.java
+import java.time.LocalDate;
+import java.util.*;
+
+public class LeaveSystem {
+    private static final Scanner sc = new Scanner(System.in);
+    private static final List<User> users = new ArrayList<>();
+    private static final List<LeaveRequest> requests = new ArrayList<>();
+    private static User currentUser = null;
+
+    public static void main(String[] args) {
+        initData();
+        login();
+        menu();
+    }
+
+    static void initData() {
+        User manager = new User("mrB", "1234", "Quản lý trực tiếp", "IT", null);
+        User emp1 = new User("mrF", "1234", "Nhân viên", "IT", manager);
+        User emp2 = new User("mrE", "1234", "Nhân viên", "IT", manager);
+        users.add(manager);
+        users.add(emp1);
+        users.add(emp2);
+    }
+
+    static void login() {
+        while (true) {
+            System.out.print("Username: ");
+            String u = sc.nextLine();
+            System.out.print("Password: ");
+            String p = sc.nextLine();
+            for (User user : users) {
+                if (user.username.equals(u) && user.password.equals(p)) {
+                    currentUser = user;
+                    System.out.println("Đăng nhập thành công.");
+                    return;
+                }
+            }
+            System.out.println("Sai tài khoản hoặc mật khẩu. Thử lại.");
+        }
+    }
+
+    static void menu() {
+        while (true) {
+            System.out.println("\n1. Tạo đơn nghỉ phép");
+            System.out.println("2. Xem đơn nghỉ phép của tôi");
+            if (currentUser.isManager()) {
+                System.out.println("3. Xem đơn nghỉ phép của cấp dưới");
+                System.out.println("4. Duyệt đơn");
+                System.out.println("5. Xem agenda");
+            }
+            System.out.println("0. Thoát");
+
+            int choice = Integer.parseInt(sc.nextLine());
+            switch (choice) {
+                case 1 -> createRequest();
+                case 2 -> viewMyRequests();
+                case 3 -> {
+                    if (currentUser.isManager()) viewSubordinateRequests();
+                }
+                case 4 -> {
+                    if (currentUser.isManager()) approveRequest();
+                }
+                case 5 -> {
+                    if (currentUser.role.equals("Quản lý phòng ban")) viewAgenda();
+                }
+                case 0 -> System.exit(0);
+            }
+        }
+    }
+
+    static void createRequest() {
+        System.out.print("Tiêu đề: ");
+        String title = sc.nextLine();
+        System.out.print("Từ ngày (yyyy-mm-dd): ");
+        LocalDate from = LocalDate.parse(sc.nextLine());
+        System.out.print("Tới ngày (yyyy-mm-dd): ");
+        LocalDate to = LocalDate.parse(sc.nextLine());
+        System.out.print("Lý do: ");
+        String reason = sc.nextLine();
+
+        requests.add(new LeaveRequest(title, from, to, reason, currentUser));
+        System.out.println("Tạo đơn nghỉ phép thành công.");
+    }
+
+    static void viewMyRequests() {
+        for (LeaveRequest r : requests) {
+            if (r.createdBy == currentUser) {
+                System.out.printf("[%s] %s (%s -> %s) - %s\n",
+                        r.status, r.title, r.fromDate, r.toDate,
+                        (r.processedBy != null ? r.processedBy.username : "Chưa xử lý"));
+            }
+        }
+    }
+
+    static void viewSubordinateRequests() {
+        for (LeaveRequest r : requests) {
+            if (r.createdBy.manager == currentUser) {
+                System.out.printf("[%s] %s - tạo bởi %s\n",
+                        r.status, r.title, r.createdBy.username);
+            }
+        }
+    }
+
+    static void approveRequest() {
+        List<LeaveRequest> pending = new ArrayList<>();
+        for (LeaveRequest r : requests) {
+            if (r.createdBy.manager == currentUser && r.status == LeaveRequest.Status.INPROGRESS) {
+                pending.add(r);
+            }
+        }
+        for (int i = 0; i < pending.size(); i++) {
+            LeaveRequest r = pending.get(i);
+            System.out.printf("%d. %s (%s -> %s) của %s\n", i + 1,
+                    r.title, r.fromDate, r.toDate, r.createdBy.username);
+        }
+        System.out.print("Chọn đơn để xử lý (0 để thoát): ");
+        int idx = Integer.parseInt(sc.nextLine());
+        if (idx == 0) return;
+
+        LeaveRequest selected = pending.get(idx - 1);
+        System.out.print("Duyệt (a) hay từ chối (r)? ");
+        String action = sc.nextLine();
+        if (action.equalsIgnoreCase("a")) {
+            selected.status = LeaveRequest.Status.APPROVED;
+        } else {
+            selected.status = LeaveRequest.Status.REJECTED;
+        }
+        selected.processedBy = currentUser;
+        System.out.println("Xử lý thành công.");
+    }
+
+    static void viewAgenda() {
+        // Giản lược, bạn có thể thêm xử lý ngày và bảng tình trạng
+        System.out.println("Chức năng xem agenda đang phát triển...");
+    }
+}
+✅ Hướng phát triển tiếp theo
+Giao diện GUI với JavaFX hoặc chuyển sang Web (Spring Boot, React)
+
+Lưu dữ liệu vào file hoặc database (MySQL)
+
+Thêm báo cáo, lọc theo ngày, in báo cáo nghỉ phép
+
+Bạn có muốn mình tách sẵn các file .java hoặc thêm tính năng nào không?
