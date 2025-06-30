@@ -1,0 +1,2852 @@
+PRJ301_SUMMER2025_A42.zip
+Lưu trữ Zip
+Bổ sung thêm màn hình /rfl/create
+
+
+ChatGPT đã nói:
+Để bổ sung thêm màn hình /rfl/create vào dự án JSP/Servlet bạn vừa gửi (PRJ301_SUMMER2025_A42.zip), bạn cần thực hiện các bước sau đây:
+
+✅ 1. Giải nén và xác định cấu trúc dự án
+Giả sử dự án đã có cấu trúc chuẩn với:
+
+src/ chứa các servlet
+
+web/ hoặc webapp/ chứa các file JSP
+
+✅ 2. Tạo JSP: rfl_create.jsp
+Đường dẫn: web/rfl/create.jsp (hoặc webapp/rfl/create.jsp nếu bạn dùng Maven)
+
+Nội dung ví dụ:
+
+jsp
+Sao chép
+Chỉnh sửa
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Create RFL</title>
+</head>
+<body>
+<h2>Create New RFL Request</h2>
+<form action="${pageContext.request.contextPath}/rfl/create" method="post">
+    <label for="title">Title:</label><br/>
+    <input type="text" name="title" id="title" required/><br/><br/>
+
+    <label for="reason">Reason:</label><br/>
+    <textarea name="reason" id="reason" required></textarea><br/><br/>
+
+    <label for="fromDate">From Date:</label><br/>
+    <input type="date" name="fromDate" id="fromDate" required/><br/><br/>
+
+    <label for="toDate">To Date:</label><br/>
+    <input type="date" name="toDate" id="toDate" required/><br/><br/>
+
+    <input type="submit" value="Submit"/>
+</form>
+</body>
+</html>
+✅ 3. Tạo Servlet: RflCreateServlet.java
+Đường dẫn gợi ý: src/controller/RflCreateServlet.java
+
+java
+Sao chép
+Chỉnh sửa
+package controller;
+
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import model.Rfl;
+import dao.RflDAO;
+
+@WebServlet("/rfl/create")
+public class RflCreateServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/rfl/create.jsp").forward(request, response);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String title = request.getParameter("title");
+        String reason = request.getParameter("reason");
+        String fromDate = request.getParameter("fromDate");
+        String toDate = request.getParameter("toDate");
+
+        Rfl rfl = new Rfl();
+        rfl.setTitle(title);
+        rfl.setReason(reason);
+        rfl.setFromDate(fromDate);
+        rfl.setToDate(toDate);
+
+        new RflDAO().insert(rfl);
+
+        response.sendRedirect(request.getContextPath() + "/rfl/own");
+    }
+}
+✅ 4. Tạo lớp DAO và model (nếu chưa có)
+Ví dụ: RflDAO.java
+
+java
+Sao chép
+Chỉnh sửa
+package dao;
+
+import java.sql.*;
+import model.Rfl;
+import utils.DBUtils;
+
+public class RflDAO {
+    public void insert(Rfl rfl) {
+        String sql = "INSERT INTO RFL (title, reason, fromDate, toDate) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, rfl.getTitle());
+            ps.setString(2, rfl.getReason());
+            ps.setString(3, rfl.getFromDate());
+            ps.setString(4, rfl.getToDate());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+Ví dụ: Rfl.java (model)
+
+java
+Sao chép
+Chỉnh sửa
+package model;
+
+public class Rfl {
+    private String title;
+    private String reason;
+    private String fromDate;
+    private String toDate;
+
+    // Getters & Setters
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+
+    public String getFromDate() { return fromDate; }
+    public void setFromDate(String fromDate) { this.fromDate = fromDate; }
+
+    public String getToDate() { return toDate; }
+    public void setToDate(String toDate) { this.toDate = toDate; }
+}
+✅ 5. Cập nhật Navigation (nếu có)
+Nếu có navbar.jsp, hãy thêm liên kết:
+
+jsp
+Sao chép
+Chỉnh sửa
+<a href="${pageContext.request.contextPath}/rfl/create">Create RFL</a>
+✅ 6. Cập nhật database
+Hãy đảm bảo có bảng RFL với các cột tương ứng:
+
+sql
+Sao chép
+Chỉnh sửa
+CREATE TABLE RFL (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255),
+    reason TEXT,
+    fromDate DATE,
+    toDate DATE
+);
+Nếu bạn muốn mình kiểm tra lại dựa trên code thực tế trong file .zip, mình có thể giải nén và xem cụ thể giúp bạn. Bạn có muốn mình làm vậy không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+
+create.jsp trong file rfl thif khác gì với rfl_create.jsp và để ở đâu ?
+
+ChatGPT đã nói:
+Rất hay, bạn đang hỏi về sự khác biệt giữa:
+
+create.jsp trong thư mục view/rfl/ (hiện có trong dự án)
+
+Và file mà mình hướng dẫn là rfl_create.jsp
+
+✅ 1. create.jsp trong view/rfl/ là gì?
+Dựa vào ảnh bạn cung cấp:
+
+pgsql
+Sao chép
+Chỉnh sửa
+Web Pages/
+└── view/
+    └── rfl/
+        ├── create.jsp
+        └── list.jsp
+Thì create.jsp chính là màn hình tạo mới RFL đã có sẵn trong dự án. Bạn không cần tạo rfl_create.jsp nữa.
+
+👉 Mình gợi ý tạo rfl_create.jsp lúc trước là vì chưa biết bạn đã có sẵn create.jsp. Thực chất nó là cùng một chức năng.
+
+✅ 2. Vậy nên để file create.jsp ở đâu?
+Câu trả lời: Bạn đang để đúng rồi!
+
+pgsql
+Sao chép
+Chỉnh sửa
+/view/rfl/create.jsp
+Trong Servlet, bạn có thể forward đến file JSP như sau:
+
+java
+Sao chép
+Chỉnh sửa
+request.getRequestDispatcher("/view/rfl/create.jsp").forward(request, response);
+✅ 3. Tóm lại
+Tên	Đã có sẵn chưa?	Mục đích	Đường dẫn hợp lý
+rfl_create.jsp	❌ Không cần	Tạo mới RFL	/view/rfl/create.jsp
+create.jsp	✅ Đã có	Tạo mới RFL	/view/rfl/create.jsp
+
+✅ 4. Tiếp theo nên làm gì?
+Bạn hãy:
+
+Kiểm tra lại nội dung create.jsp đã có đầy đủ các trường như:
+
+title
+
+reason
+
+fromDate
+
+toDate
+
+Đảm bảo có một Servlet xử lý /rfl/create, ví dụ:
+
+java
+Sao chép
+Chỉnh sửa
+@WebServlet("/rfl/create")
+public class RflCreateServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+        request.getRequestDispatcher("/view/rfl/create.jsp").forward(request, response);
+    }
+    
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+        // Xử lý dữ liệu form và lưu vào DB
+    }
+}
+Bạn muốn mình kiểm tra và bổ sung luôn servlet đó cho bạn không? Nếu có, vui lòng xác nhận và cho biết bạn đang dùng model/DAO nào để mình gắn chính xác nhé.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package controller.rfl;
+
+import controller.authentication.BaseRBACController;
+import dal.RequestForLeaveDBContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import model.Account;
+import java.sql.Date;
+import model.RequestForLeave;
+
+/**
+ *
+ * @author sonnt
+ */
+public class CreateController extends BaseRBACController {
+
+    @Override
+    protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        String title = req.getParameter("title");
+        String reason = req.getParameter("reason");
+        Date from = Date.valueOf(req.getParameter("from"));
+        Date to = Date.valueOf(req.getParameter("to"));
+        RequestForLeave rfl = new RequestForLeave();
+        rfl.setTitle(title);
+        rfl.setReason(reason);
+        rfl.setFrom(from);
+        rfl.setTo(to);
+        rfl.setCreatedby(account);
+        
+        RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+        db.insert(rfl);
+        System.out.println("Inserted!");
+    }
+
+    @Override
+    protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        req.getRequestDispatcher("../view/rfl/create.jsp").forward(req, resp);
+    }
+    
+}  có phải cái này không ?
+
+
+ChatGPT đã nói:
+✅ Đúng rồi! Đây chính là servlet CreateController dùng để xử lý màn hình /rfl/create trong dự án của bạn.
+
+🔍 Phân tích chi tiết CreateController
+🔧 Vị trí:
+Lớp này nằm trong gói:
+
+java
+Sao chép
+Chỉnh sửa
+package controller.rfl;
+🧩 Kế thừa:
+java
+Sao chép
+Chỉnh sửa
+extends BaseRBACController
+→ Đây là một controller có phân quyền (RBAC: Role-Based Access Control), thường có thể xử lý Account đã đăng nhập.
+
+✅ processGet() → hiển thị form
+java
+Sao chép
+Chỉnh sửa
+protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account)
+        throws ServletException, IOException {
+    req.getRequestDispatcher("../view/rfl/create.jsp").forward(req, resp);
+}
+🔹 Chức năng: Hiển thị form xin nghỉ
+🔹 JSP: view/rfl/create.jsp (📌 bạn đã để đúng chỗ)
+
+✅ processPost() → xử lý gửi form
+java
+Sao chép
+Chỉnh sửa
+protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account)
+        throws ServletException, IOException {
+    ...
+    RequestForLeave rfl = new RequestForLeave();
+    ...
+    db.insert(rfl);
+}
+🔹 Chức năng: Lấy dữ liệu từ form và lưu vào CSDL
+
+✅ Ở mức tổng thể, bạn đã có đầy đủ:
+Thành phần	Đã có	Ghi chú
+✅ JSP create.jsp	✔️	Đặt đúng tại view/rfl/create.jsp
+✅ Controller CreateController	✔️	Xử lý GET + POST
+✅ Model RequestForLeave	✔️	Đã dùng trong controller
+✅ DAO RequestForLeaveDBContext	✔️	Gọi insert()
+
+🚨 Gợi ý cải thiện nhỏ
+Sau khi insert thành công, nên redirect về danh sách (list.jsp) để tránh bị gửi lại form khi refresh:
+
+Thay:
+java
+Sao chép
+Chỉnh sửa
+System.out.println("Inserted!");
+Bằng:
+java
+Sao chép
+Chỉnh sửa
+resp.sendRedirect("list"); // hoặc req.getContextPath() + "/rfl/list" nếu cần
+Form trong create.jsp đảm bảo có method="post":
+
+jsp
+Sao chép
+Chỉnh sửa
+<form action="${pageContext.request.contextPath}/rfl/create" method="post">
+❓Bạn cần thêm gì tiếp theo không?
+Hiển thị lỗi nhập không hợp lệ?
+
+Xác nhận đã gửi đơn thành công?
+
+Giới hạn ngày from ≤ to?
+
+Tự động gán createdby là người đang đăng nhập?
+
+Cứ nói mình biết, mình sẽ hỗ trợ chi tiết.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+<%-- 
+    Document   : create
+    Created on : Jun 30, 2025, 10:28:52 AM
+    Author     : sonnt
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Create new Request for Leave</title>
+    </head>
+    <body>
+        <form action="create" method="POST">
+            Title: <input type="text" name="title"/> <br/>
+            From:<input type="date" name="from"/> <br/>
+            To:<input type="date" name="to" /> <br/>
+            Reason: <input type="text" name="reason"/> <br/>
+            <input type="submit" value="Request"/>
+        </form>
+    </body>
+</html>  create.jsp toàn là?
+
+
+ChatGPT đã nói:
+Đúng rồi, create.jsp của bạn đang là form HTML đơn giản để tạo đơn xin nghỉ phép (Request for Leave).
+
+✅ Tóm tắt nội dung create.jsp
+jsp
+Sao chép
+Chỉnh sửa
+<form action="create" method="POST">
+    Title:     <input type="text" name="title"/> <br/>
+    From:      <input type="date" name="from"/> <br/>
+    To:        <input type="date" name="to"/> <br/>
+    Reason:    <input type="text" name="reason"/> <br/>
+    <input type="submit" value="Request"/>
+</form>
+Trường	name trong form	Mục đích
+Title	title	Tiêu đề đơn xin nghỉ
+From	from	Ngày bắt đầu nghỉ
+To	to	Ngày kết thúc nghỉ
+Reason	reason	Lý do nghỉ
+
+✅ Tương ứng hoàn hảo với CreateController.java
+Trong CreateController.java, bạn dùng:
+
+java
+Sao chép
+Chỉnh sửa
+String title = req.getParameter("title");
+String reason = req.getParameter("reason");
+Date from = Date.valueOf(req.getParameter("from"));
+Date to = Date.valueOf(req.getParameter("to"));
+👉 Các name trong <input> của create.jsp trùng khớp hoàn toàn với getParameter(...) trong servlet → hoạt động chính xác.
+
+✅ Về action="create"
+Dòng này:
+
+html
+Sao chép
+Chỉnh sửa
+<form action="create" method="POST">
+Sẽ gửi POST đến URL hiện tại (tức là /rfl/create), vì controller bạn đã khai báo trong web.xml hoặc @WebServlet("/rfl/create") rồi.
+
+✅ Kết luận
+Phần	Đã làm đúng chưa?	Ghi chú
+Tên form action="create"	✔️	Sẽ gọi đúng Servlet /rfl/create
+method="POST"	✔️	Dữ liệu sẽ đến processPost()
+Các input name=...	✔️	Trùng khớp với servlet
+
+🚀 Gợi ý nâng cao (tùy chọn)
+Nếu bạn muốn nâng cấp giao diện hoặc UX:
+
+Dùng <textarea> cho reason:
+
+html
+Sao chép
+Chỉnh sửa
+Reason:<br/>
+<textarea name="reason" rows="4" cols="40"></textarea><br/>
+Thêm yêu cầu bắt buộc:
+
+html
+Sao chép
+Chỉnh sửa
+<input type="text" name="title" required/>
+<input type="date" name="from" required/>
+...
+Hiển thị thông báo thành công hoặc lỗi sau khi submit.
+
+Nếu bạn cần hỗ trợ phần hiển thị danh sách (list.jsp) hoặc xử lý lỗi/validate, mình có thể giúp tiếp. Bạn muốn tiếp tục phần nào?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+vậy thì tạo màn hình /rfl/create , yes,no 
+
+
+ChatGPT đã nói:
+✅ Yes — bạn đã tạo màn hình /rfl/create rồi. Không cần tạo lại nữa.
+
+🔎 Lý do:
+Thành phần	Trạng thái	Ghi chú
+✅ create.jsp	Đã có	Tại view/rfl/create.jsp
+✅ Servlet /rfl/create	Đã có	CreateController.java kế thừa BaseRBACController
+✅ Form HTML	Đúng	Các input name khớp với servlet
+✅ Xử lý insert DB	Đã làm	Gọi RequestForLeaveDBContext.insert()
+✅ Giao diện URL	/rfl/create	Form submit đúng
+
+👉 Kết luận:
+Bạn không cần làm gì thêm để “tạo màn hình /rfl/create” — bạn đã hoàn tất rồi. 🎉
+
+Nếu bạn muốn:
+
+Validate dữ liệu
+
+Hiển thị thông báo thành công
+
+Chuyển hướng về trang danh sách
+
+Giới hạn quyền truy cập
+
+thì có thể bổ sung tiếp, mình sẽ hỗ trợ chi tiết từng phần nếu bạn muốn. Bạn cần mở rộng phần nào tiếp theo không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+vậy thì tại sao tôi không login được HTTP Status 500 – Internal Server Error
+Type Exception Report
+
+Message Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+
+Description The server encountered an unexpected condition that prevented it from fulfilling the request.
+
+Exception
+
+java.lang.NullPointerException: Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+	dal.AccountDBContext.get(AccountDBContext.java:41)
+	controller.authentication.LoginController.doPost(LoginController.java:28)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+Note The full stack trace of the root cause is available in the server logs.
+
+Apache Tomcat/10.1.40
+mrd 1234
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã cung cấp chi tiết lỗi, username/password, và thông báo exception cụ thể.
+
+❌ Vấn đề của bạn: NullPointerException tại AccountDBContext.get(...)
+⚠️ Lỗi chính xác:
+csharp
+Sao chép
+Chỉnh sửa
+Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+🧨 Nghĩa là:
+Trong lớp AccountDBContext, biến this.connection đang bị null.
+
+Mà bạn lại gọi this.connection.isClosed() → gây NullPointerException.
+
+📌 Nguyên nhân thường gặp:
+Lớp DBContext hoặc BaseDBContext không khởi tạo connection đúng cách.
+
+Chưa cấu hình file context.xml hoặc cấu hình sai.
+
+Thiếu thư viện JDBC trong project (nếu dùng MSSQL thì cần mssql-jdbc.jar).
+
+✅ Hướng xử lý chi tiết
+1. Kiểm tra DBContext.java (hoặc BaseDBContext)
+Bạn cần có code như sau để kết nối DB:
+
+java
+Sao chép
+Chỉnh sửa
+package dal;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public abstract class DBContext {
+    protected Connection connection;
+
+    public DBContext() {
+        try {
+            String user = "sa";
+            String pass = "123456";
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=YourDB;encrypt=true;trustServerCertificate=true";
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(url, user, pass);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}
+🔎 Nếu không có this.connection = ..., thì mọi DAO kế thừa từ DBContext sẽ có null connection.
+
+2. Kiểm tra dòng 41 trong AccountDBContext.java
+Tại dòng này bạn gọi:
+
+java
+Sao chép
+Chỉnh sửa
+if (!connection.isClosed()) ...
+💥 Nhưng nếu connection là null, thì dòng trên sẽ nổ lỗi như bạn thấy.
+
+✅ Bạn cần chắc chắn super() của DBContext đã khởi tạo connection.
+
+3. Kiểm tra file cấu hình context.xml nếu bạn dùng JNDI
+Nếu bạn không khởi tạo connection bằng tay mà dùng JNDI (DataSource), hãy kiểm tra:
+
+File META-INF/context.xml
+
+Trong đó phải có:
+
+xml
+Sao chép
+Chỉnh sửa
+<Resource name="jdbc/yourDB"
+          auth="Container"
+          type="javax.sql.DataSource"
+          driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+          url="jdbc:sqlserver://localhost:1433;databaseName=YourDB;encrypt=true;trustServerCertificate=true"
+          username="sa"
+          password="123456"
+          maxTotal="20"
+          maxIdle="10"
+          maxWaitMillis="-1"/>
+Và trong code bạn phải có:
+
+java
+Sao chép
+Chỉnh sửa
+InitialContext ctx = new InitialContext();
+DataSource ds = (DataSource) ctx.lookup("java:comp/env/jdbc/yourDB");
+connection = ds.getConnection();
+4. Kiểm tra có thư viện JDBC chưa
+Bạn cần file mssql-jdbc-xxx.jar trong thư mục Libraries. Nếu chưa có thì:
+
+Tải về tại: https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
+
+Thêm vào thư viện của NetBeans/IntelliJ.
+
+✅ Cách khắc phục nhanh nhất lúc này:
+🔧 Nếu bạn dùng DBContext do thầy Sơn gợi ý:
+Sửa lớp DBContext hoặc AccountDBContext sao cho connection được khởi tạo, ví dụ:
+
+java
+Sao chép
+Chỉnh sửa
+public AccountDBContext() {
+    try {
+        String user = "sa";
+        String pass = "123456";
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=YourDB;encrypt=true;trustServerCertificate=true";
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        connection = DriverManager.getConnection(url, user, pass);
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+}
+❓Bạn muốn mình:
+Kiểm tra file DBContext.java bạn đang dùng?
+
+Giúp tạo file DBContext.java đầy đủ?
+
+Giúp sửa context.xml nếu bạn dùng JNDI?
+
+Bạn chỉ cần upload file DBContext.java hoặc nói rõ bạn đang dùng cách kết nối nào, mình sẽ sửa chính xác giúp bạn.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package dal;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import model.IModel;
+
+/**
+ *
+ * @author p14s
+ */
+public abstract class DBContext<T extends IModel> {
+    protected Connection connection;
+    public DBContext()
+    {
+        try {
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+            String user = "as";
+            String pass = "123";
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(url, user, pass);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public abstract ArrayList<T> list();
+    public abstract T get(int id);
+    public abstract void insert(T model);
+    public abstract void update(T model);
+    public abstract void delete(T model);
+    
+}/
+nhung  HTTP Status 500 – Internal Server Error
+Type Exception Report
+
+Message Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+
+Description The server encountered an unexpected condition that prevented it from fulfilling the request.
+
+Exception
+
+java.lang.NullPointerException: Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+	dal.AccountDBContext.get(AccountDBContext.java:41)
+	controller.authentication.LoginController.doPost(LoginController.java:28)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+Note The full stack trace of the root cause is available in the server logs.
+
+Apache Tomcat/10.1.40
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã gửi DBContext.java. Dựa vào code bạn đưa, chúng ta có thể kết luận rõ ràng về nguyên nhân gây lỗi:
+
+❌ Vấn đề chính: connection vẫn là null → vì lỗi khi kết nối DB
+Trong constructor bạn có đoạn:
+
+java
+Sao chép
+Chỉnh sửa
+connection = DriverManager.getConnection(url, user, pass);
+và bắt lỗi như sau:
+
+java
+Sao chép
+Chỉnh sửa
+} catch (SQLException ex) {
+    Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+}
+⚠️ Bạn ghi log lỗi, nhưng không dừng chương trình → chương trình tiếp tục chạy dù connection == null, dẫn đến:
+
+java
+Sao chép
+Chỉnh sửa
+connection.isClosed() // ⚠️ NullPointerException
+✅ Cách sửa chuẩn nhất: Kiểm tra connection null và xử lý cứng rắn
+✅ Sửa DBContext constructor:
+java
+Sao chép
+Chỉnh sửa
+public DBContext() {
+    try {
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+        String user = "as";
+        String pass = "123";
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        connection = DriverManager.getConnection(url, user, pass);
+    } catch (ClassNotFoundException | SQLException ex) {
+        ex.printStackTrace(); // In lỗi ra console
+        throw new RuntimeException("❌ Cannot connect to DB: " + ex.getMessage());
+    }
+}
+🧠 Tại sao?
+Dòng throw new RuntimeException(...) giúp dừng chương trình ngay khi không kết nối được → tránh lỗi ngầm NullPointerException ở chỗ khác.
+
+Bạn dễ debug hơn vì biết rõ lỗi sai là ở bước kết nối.
+
+✅ Kiểm tra thêm
+Kiểm tra username/password của bạn
+
+Username: as
+
+Password: 123
+
+Kiểm tra xem user này có quyền truy cập database PRJ301A42 không?
+
+Cấu hình SQL Server
+
+Đã mở cổng 1433
+
+SQL Server cho phép authentication bằng username/password (SQL Server Authentication)
+→ kiểm tra bằng SQL Server Management Studio (SSMS)
+
+Driver JDBC có chưa?
+
+Đảm bảo bạn đã thêm mssql-jdbc-<version>.jar vào Libraries trong NetBeans/IntelliJ
+
+✅ Cách test nhanh: Viết file Java test kết nối
+Tạo file TestConnection.java để kiểm tra:
+
+java
+Sao chép
+Chỉnh sửa
+import java.sql.*;
+
+public class TestConnection {
+    public static void main(String[] args) {
+        try {
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+            String user = "as";
+            String pass = "123";
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Connection conn = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Connected!");
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+👉 Nếu bạn chạy file trên và nó báo lỗi → thì là do tài khoản hoặc database, không phải code JSP/Servlet.
+
+✅ Tổng kết
+Việc cần làm	Mức độ ưu tiên	Ghi chú
+✅ Thêm throw new RuntimeException(...) trong DBContext	⚠️ Rất quan trọng	Ngăn lỗi lan rộng
+✅ Kiểm tra user/password và quyền truy cập	⚠️ Quan trọng	Có thể user "as" không được quyền
+✅ Test kết nối với TestConnection.java	✅ Rất dễ làm	Giúp bạn biết lỗi là do DB hay do code
+
+Nếu bạn gửi mình AccountDBContext.java, mình có thể kiểm tra dòng lỗi 41 cụ thể luôn cho bạn. Hoặc nếu bạn chạy TestConnection.java và chụp lỗi/ảnh báo, mình sẽ hướng dẫn sửa tận gốc. Bạn muốn mình kiểm tra tiếp không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+HTTP Status 500 – Internal Server Error
+Type Exception Report
+
+Message ❌ Cannot connect to DB: Login failed for user 'as'. ClientConnectionId:767ce871-5204-4b2f-8d8a-16b323557919
+
+Description The server encountered an unexpected condition that prevented it from fulfilling the request.
+
+Exception
+
+java.lang.RuntimeException: ❌ Cannot connect to DB: Login failed for user 'as'. ClientConnectionId:767ce871-5204-4b2f-8d8a-16b323557919
+	dal.DBContext.<init>(DBContext.java:30)
+	dal.AccountDBContext.<init>(AccountDBContext.java:17)
+	controller.authentication.LoginController.doPost(LoginController.java:27)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+Note The full stack trace of the root cause is available in the server logs.
+
+Apache Tomcat/10.1.40
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã kiểm tra. Lỗi này đã rõ ràng 100%:
+
+❌ Lỗi chính: Login failed for user 'as'
+🔥 Nghĩa là:
+SQL Server đã nhận được kết nối
+
+Nhưng từ chối user "as" vì:
+
+Sai username hoặc password
+
+Hoặc user "as" không tồn tại
+
+Hoặc user "as" không được phép đăng nhập từ ứng dụng ngoài (SQL Server Authentication bị tắt)
+
+✅ Cách khắc phục
+✳️ Cách 1: Đổi sang tài khoản chắc chắn có quyền
+Nếu bạn biết sa là tài khoản mặc định quản trị hệ thống SQL Server (đảm bảo đã bật SQL Server Authentication), hãy đổi DBContext thành:
+
+java
+Sao chép
+Chỉnh sửa
+String user = "sa";
+String pass = "123456"; // hoặc mật khẩu bạn đặt cho user 'sa'
+Rồi khởi động lại server và chạy lại.
+
+✳️ Cách 2: Bật SQL Server Authentication + kiểm tra user
+🔧 1. Mở SQL Server Management Studio (SSMS)
+Đăng nhập bằng Windows Authentication
+
+🔧 2. Bật chế độ SQL Authentication (nếu chưa bật)
+Chuột phải vào tên server > Properties
+
+Tab Security > chọn SQL Server and Windows Authentication mode
+
+🔧 3. Khởi động lại SQL Server
+🔧 4. Tạo user "as" nếu chưa có
+Chạy câu lệnh:
+
+sql
+Sao chép
+Chỉnh sửa
+CREATE LOGIN as WITH PASSWORD = '123';
+CREATE USER as FOR LOGIN as;
+ALTER ROLE db_owner ADD MEMBER as;
+👉 Lệnh này sẽ:
+
+Tạo login "as" với mật khẩu "123"
+
+Tạo user "as" trong CSDL PRJ301A42
+
+Gán quyền db_owner để có toàn quyền truy cập
+
+✅ Xác nhận sau khi sửa
+Khi sửa đúng, chạy lại sẽ thấy dòng này nếu bạn in ra:
+
+java
+Sao chép
+Chỉnh sửa
+System.out.println("✅ Connected!");
+✅ Tổng kết
+Việc cần làm	Mô tả
+🔧 Đổi user "as" sang "sa" (nếu sa hoạt động)	Cách nhanh nhất
+🔧 Bật SQL Authentication trong SQL Server	Nếu bạn dùng user SQL như as, sa
+🔧 Tạo user "as" + gán quyền	Nếu bạn muốn giữ lại as
+
+Bạn có thể gửi mình ảnh cấu hình SSMS nếu cần kiểm tra trực tiếp.
+
+Bạn muốn mình tạo luôn đoạn SQL để chạy trong SSMS không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+nhưng mà user as với 123 có trong sql rồi ?
+
+
+ChatGPT đã nói:
+Cảm ơn bạn xác nhận — vậy ta đang ở giai đoạn cuối cùng của việc fix lỗi này.
+
+Bạn nói rằng user as với password 123 đã có trong SQL Server. Vậy hãy cùng rà lại toàn bộ các lý do còn lại có thể khiến SQL báo Login failed for user 'as', dù user có tồn tại.
+
+✅ Checklist 100% để xử lý lỗi Login failed for user 'as'
+🔹 1. Đã bật SQL Server Authentication chưa?
+Dù user as có trong SQL, nếu server đang chạy ở chế độ “Windows Authentication only”, thì vẫn không đăng nhập được.
+
+🔍 Cách kiểm tra:
+
+Vào SSMS → chuột phải vào server → Properties
+
+Tab Security
+
+✅ Đảm bảo chọn: SQL Server and Windows Authentication mode
+
+Nếu chưa bật → Bật rồi restart SQL Server.
+
+🔹 2. User as có Login không?
+Trong SQL Server có 2 thứ:
+
+Login (cấp server)
+
+User (cấp database)
+
+❗ Có thể bạn tạo User trong database, nhưng chưa có Login cấp server.
+
+🔍 Kiểm tra bằng:
+
+sql
+Sao chép
+Chỉnh sửa
+SELECT name FROM sys.sql_logins WHERE name = 'as'
+Nếu không có kết quả, bạn cần tạo:
+
+sql
+Sao chép
+Chỉnh sửa
+CREATE LOGIN as WITH PASSWORD = '123';
+🔹 3. User as đã được map với database PRJ301A42 chưa?
+Kiểm tra trong SSMS:
+
+sql
+Sao chép
+Chỉnh sửa
+USE PRJ301A42;
+SELECT name FROM sys.database_principals WHERE name = 'as';
+Nếu chưa có, tạo:
+
+sql
+Sao chép
+Chỉnh sửa
+USE PRJ301A42;
+CREATE USER as FOR LOGIN as;
+ALTER ROLE db_owner ADD MEMBER as;
+🔹 4. Cổng 1433 có mở và SQL Server đang lắng nghe không?
+Vào SQL Server Configuration Manager
+
+Chọn SQL Server Network Configuration > Protocols for MSSQLSERVER
+
+Đảm bảo TCP/IP đã được Enabled
+
+Kiểm tra cổng: Default là 1433
+
+🔹 5. Thử kết nối bằng SSMS bằng user as
+Mở SSMS → đăng nhập kiểu:
+
+Authentication: SQL Server Authentication
+
+Login: as
+
+Password: 123
+
+✅ Nếu đăng nhập được → user OK
+❌ Nếu bị từ chối → lỗi do SQL chứ không phải Java code.
+
+✅ Tóm lại: Xử lý theo thứ tự sau
+Bước	Việc cần làm
+✅ B1	Bật SQL Server Authentication trong SSMS
+✅ B2	Tạo login as nếu chưa có: CREATE LOGIN as WITH PASSWORD = '123';
+✅ B3	Gán login vào CSDL: CREATE USER as FOR LOGIN as;
+✅ B4	Gán quyền: ALTER ROLE db_owner ADD MEMBER as;
+✅ B5	Test lại bằng SSMS đăng nhập = as/123
+
+📌 Nếu bạn đã làm đầy đủ mà vẫn lỗi, gửi mình:
+
+Ảnh cấu hình tab Security trong SSMS (server properties)
+
+Kết quả của lệnh:
+
+sql
+Sao chép
+Chỉnh sửa
+SELECT name, type_desc FROM sys.database_principals WHERE name = 'as';
+Mình sẽ soi kỹ giúp bạn cho tới khi đăng nhập thành công.
+
+Bạn có muốn mình gửi sẵn script SQL hoàn chỉnh để chạy trong SSMS không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+Message ❌ Cannot connect to DB: Login failed for user 'as'. ClientConnectionId:767ce871-5204-4b2f-8d8a-16b323557919
+
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã kiên nhẫn. Vì lỗi vẫn là:
+
+❌ Login failed for user 'as'
+
+→ Điều này chứng minh SQL Server vẫn từ chối user as, dù bạn nghĩ đã tạo đúng. Mình sẽ giúp bạn xử lý dứt điểm bằng một đoạn lệnh SQL hoàn chỉnh bạn chỉ cần copy vào SSMS và chạy.
+
+✅ 1. 🔧 Lệnh SQL để tạo mới user as đầy đủ và gán quyền
+sql
+Sao chép
+Chỉnh sửa
+-- 1. Tạo login ở cấp server
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = 'as')
+BEGIN
+    CREATE LOGIN as WITH PASSWORD = '123';
+    PRINT '✅ Login [as] created.'
+END
+ELSE
+    PRINT 'ℹ️ Login [as] already exists.'
+
+-- 2. Tạo user trong database hiện tại (PRJ301A42)
+USE PRJ301A42;
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'as')
+BEGIN
+    CREATE USER as FOR LOGIN as;
+    PRINT '✅ User [as] created in PRJ301A42.'
+END
+ELSE
+    PRINT 'ℹ️ User [as] already exists in PRJ301A42.'
+
+-- 3. Gán quyền quản lý cơ sở dữ liệu (tùy bạn có thể chọn db_datareader nếu muốn giới hạn hơn)
+ALTER ROLE db_owner ADD MEMBER as;
+PRINT '✅ User [as] added to db_owner role.'
+💡 Chạy đoạn này trong SQL Server Management Studio (SSMS)
+
+✅ 2. Kiểm tra bật chế độ SQL Authentication chưa
+SSMS → Chuột phải vào server → Properties
+
+Tab Security
+
+✅ Đảm bảo chọn: SQL Server and Windows Authentication mode
+
+Restart lại SQL Server
+
+✅ 3. Kiểm tra đăng nhập được chưa?
+Dùng SSMS
+
+Chọn:
+
+Server name: localhost hoặc localhost,1433
+
+Authentication: SQL Server Authentication
+
+Login: as
+
+Password: 123
+
+➤ Đăng nhập thử
+
+✅ Nếu đăng nhập được: hệ thống bạn có thể chạy.
+❌ Nếu vẫn báo sai password → lúc này lỗi là do cấu hình SQL, không phải Java.
+
+✅ 4. Kiểm tra JDBC URL trong Java
+Trong DBContext.java:
+
+java
+Sao chép
+Chỉnh sửa
+String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+String user = "as";
+String pass = "123";
+🔥 Phải đúng databaseName là PRJ301A42, đúng user/password, và có driver mssql-jdbc.jar
+
+📌 Nếu sau khi chạy script vẫn không login được
+Hãy gửi mình 1 trong 3 thứ sau:
+
+Ảnh lỗi khi đăng nhập SSMS bằng user as
+
+Kết quả từ đoạn SQL:
+
+sql
+Sao chép
+Chỉnh sửa
+SELECT name, type_desc FROM sys.database_principals WHERE name = 'as';
+Nội dung lỗi đầy đủ bạn thấy trong SSMS hoặc trình duyệt
+
+Mình cam kết giúp bạn sửa được lỗi này tận gốc. Bạn thử chạy đoạn script trên trước nhé. Nếu cần mình kiểm tra từ xa logic SQL nữa thì cứ nhắn.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+Type Exception Report
+
+Message Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã phản hồi. Ta sẽ tập trung xử lý triệt để lỗi this.connection is null — vì đây không còn là lỗi do username/password sai nữa, mà do kết nối tới DB không được tạo ra, mặc dù bạn nghĩ đã setup xong.
+
+🎯 Lỗi rõ ràng:
+csharp
+Sao chép
+Chỉnh sửa
+❌ Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+💥 Lý do:
+Lỗi này xảy ra khi trong class DBContext, đoạn này:
+
+java
+Sao chép
+Chỉnh sửa
+connection = DriverManager.getConnection(...);
+không thực hiện được → connection vẫn là null.
+Và bạn lại gọi:
+
+java
+Sao chép
+Chỉnh sửa
+connection.isClosed(); // ❌ Nổ NullPointerException
+✅ Bạn cần làm ngay các bước sau (kiểm tra từng dòng):
+🔧 1. Đảm bảo DBContext bắt exception đúng và dừng chương trình nếu không kết nối được
+📌 DBContext.java phải giống 100% như sau:
+
+java
+Sao chép
+Chỉnh sửa
+package dal;
+import java.sql.*;
+
+public abstract class DBContext<T> {
+    protected Connection connection;
+
+    public DBContext() {
+        try {
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+            String user = "as";
+            String pass = "123";
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Connected to DB!");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("❌ Cannot connect to DB: " + ex.getMessage());
+        }
+    }
+}
+✅ Nếu không có throw new RuntimeException(...), thì lỗi sẽ không rõ ràng và chỉ bị phát hiện muộn (như isClosed()).
+
+🔧 2. Thêm đoạn test kết nối độc lập
+Tạo file TestConnection.java để test bên ngoài servlet:
+
+java
+Sao chép
+Chỉnh sửa
+import java.sql.*;
+
+public class TestConnection {
+    public static void main(String[] args) {
+        try {
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+            String user = "as";
+            String pass = "123";
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Connection conn = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Connected to DB!");
+            conn.close();
+        } catch (Exception e) {
+            System.out.println("❌ Connection failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+👉 Chạy file này. Nếu lỗi, bạn sẽ biết ngay có kết nối được hay không, mà không liên quan servlet.
+
+🔧 3. Kiểm tra lại JDBC driver đã có trong thư viện chưa
+Nếu bạn đang dùng SQL Server, bạn bắt buộc phải có thư viện sau:
+
+mssql-jdbc-12.2.0.jre11.jar (hoặc tương đương)
+
+📌 Kiểm tra:
+
+Trong NetBeans: Libraries → kiểm tra xem file .jar đã thêm chưa?
+
+Nếu chưa có:
+
+Tải từ: https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
+
+Thêm vào project
+
+✅ Tổng kết
+Bước	Việc cần làm	Quan trọng
+1️⃣	Cập nhật DBContext.java như trên (với throw)	✅ BẮT BUỘC
+2️⃣	Chạy file TestConnection.java	✅ Xác định lỗi ở đâu
+3️⃣	Kiểm tra JDBC .jar có trong Libraries chưa	✅ Không có là lỗi chắc chắn
+
+❓Bạn cần giúp gì tiếp?
+Gửi mình ảnh thư viện JDBC bạn đang dùng?
+
+Gửi AccountDBContext.java dòng 41 mình giúp fix trực tiếp?
+
+Muốn mình sửa DBContext + AccountDBContext hoàn chỉnh gửi lại bạn?
+
+Cứ nói nhé, mình sẵn sàng làm giúp bạn mẫu hoàn chỉnh.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+làm sao để kết nối netbeans đên sql
+?
+
+
+ChatGPT đã nói:
+Rất hay! Để giúp bạn kết nối NetBeans đến SQL Server, mình sẽ hướng dẫn đầy đủ từng bước từ A → Z, đơn giản nhất để chạy được Java với SQL Server.
+
+✅ I. Chuẩn bị gì để kết nối NetBeans với SQL Server
+Bạn cần 3 thứ:
+✅ SQL Server đã cài và đang chạy
+
+✅ NetBeans
+
+✅ Driver JDBC cho SQL Server (mssql-jdbc.jar)
+
+✅ II. Tải JDBC Driver cho SQL Server
+Truy cập:
+👉 https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
+
+Tải bản mới nhất (VD: mssql-jdbc-12.2.0.jre11.jar nếu bạn dùng JDK 11+)
+
+Giải nén và copy file .jar cần dùng:
+
+Vào thư mục: sqljdbc_12.2\enu
+
+Copy file trong thư mục mssql-jdbc-*.jar
+
+✅ III. Thêm JDBC Driver vào NetBeans
+⚙️ Thêm vào project:
+Chuột phải vào project Java trong NetBeans
+
+Chọn "Properties"
+
+Vào tab Libraries
+
+Nhấn "Add JAR/Folder"
+
+Chọn file mssql-jdbc-xxx.jar bạn vừa tải
+
+Bấm OK
+
+✅ IV. Viết code kết nối đến SQL Server
+🔧 Tạo file TestConnection.java để kiểm tra:
+java
+Sao chép
+Chỉnh sửa
+import java.sql.*;
+
+public class TestConnection {
+    public static void main(String[] args) {
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+        String user = "as"; // hoặc 'sa'
+        String pass = "123"; // mật khẩu tương ứng
+
+        try {
+            // Load driver
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+
+            // Kết nối
+            Connection conn = DriverManager.getConnection(url, user, pass);
+
+            // Nếu kết nối thành công
+            System.out.println("✅ Connected to SQL Server successfully!");
+
+            conn.close();
+        } catch (Exception e) {
+            System.out.println("❌ Failed to connect: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+✅ V. Những lỗi thường gặp khi kết nối
+Lỗi	Nguyên nhân & cách sửa
+❌ Login failed for user 'as'	Sai mật khẩu hoặc chưa bật SQL Authentication
+❌ TCP/IP disabled	Bật TCP/IP trong SQL Server Configuration Manager
+❌ Connection refused	SQL Server chưa bật cổng 1433 hoặc chưa khởi động
+❌ No suitable driver	Chưa thêm .jar vào project NetBeans
+
+✅ VI. Bạn cần kiểm tra những gì nếu vẫn không kết nối được
+Mục	Làm gì
+✅ JDBC URL	Đúng cú pháp, có encrypt=true;trustServerCertificate=true; nếu dùng SQL mới
+✅ Tên database	Phải đúng databaseName=PRJ301A42
+✅ User/password	Đúng, kiểm tra đăng nhập được bằng SSMS
+✅ JDBC driver .jar	Phải thêm vào project qua Libraries
+
+✅ Ví dụ URL chuẩn
+java
+Sao chép
+Chỉnh sửa
+jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;
+✅ Kết luận
+Bạn chỉ cần:
+
+Tải driver .jar
+
+Thêm vào project NetBeans
+
+Viết đoạn test kết nối
+
+Đảm bảo SQL Server mở cổng, có user, đúng mật khẩu
+
+❓Bạn muốn mình gửi file mẫu TestConnection.java sẵn .jar hoặc nén project cho bạn chạy thử không?
+Bạn cũng có thể gửi ảnh cấu hình hoặc lỗi bạn gặp nếu muốn mình xem chi tiết hơn.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+HTTP Status 500 – Internal Server Error
+Type Exception Report
+
+Message Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null 
+
+
+ChatGPT đã nói:
+Cảm ơn bạn. Lỗi bạn gặp:
+
+❌ HTTP Status 500 – Cannot invoke "java.sql.Connection.isClosed()" because "this.connection" is null
+Đây là lỗi rất cụ thể:
+
+Bạn chưa kết nối thành công đến SQL Server, nên connection là null, và code của bạn đang cố gọi connection.isClosed() → dẫn đến lỗi NullPointerException.
+
+✅ Giải pháp xử lý tận gốc
+Mình sẽ giúp bạn sửa từ cấu hình đến test, theo từng bước đơn giản nhất:
+
+✅ 1. Sửa DBContext.java để bắt lỗi rõ ràng
+Hiện bạn chỉ ghi log, không throw, nên không biết lỗi gì.
+
+➡️ Hãy thay thế constructor của DBContext thành:
+
+java
+Sao chép
+Chỉnh sửa
+public DBContext() {
+    try {
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+        String user = "as";
+        String pass = "123";
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        connection = DriverManager.getConnection(url, user, pass);
+        System.out.println("✅ Connected to DB!");
+    } catch (Exception ex) {
+        ex.printStackTrace(); // In lỗi chi tiết
+        throw new RuntimeException("❌ Cannot connect to DB: " + ex.getMessage());
+    }
+}
+✅ 2. Tạo file test kết nối để kiểm chứng ngoài servlet
+Tạo file Java riêng:
+
+java
+Sao chép
+Chỉnh sửa
+import java.sql.*;
+
+public class TestConnection {
+    public static void main(String[] args) {
+        try {
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=PRJ301A42;encrypt=true;trustServerCertificate=true;";
+            String user = "as";
+            String pass = "123";
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Connection conn = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Kết nối thành công!");
+            conn.close();
+        } catch (Exception e) {
+            System.out.println("❌ Lỗi kết nối: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+👉 Nếu file này cũng lỗi → bạn biết chắc lỗi nằm ở SQL Server, user, hoặc JDBC driver.
+
+✅ 3. Kiểm tra cấu hình SQL Server
+Làm trên SQL Server Management Studio (SSMS)
+
+🔸 Kiểm tra user as
+sql
+Sao chép
+Chỉnh sửa
+SELECT name FROM sys.sql_logins WHERE name = 'as'
+🔸 Nếu chưa có user as:
+sql
+Sao chép
+Chỉnh sửa
+CREATE LOGIN as WITH PASSWORD = '123';
+USE PRJ301A42;
+CREATE USER as FOR LOGIN as;
+ALTER ROLE db_owner ADD MEMBER as;
+✅ 4. Kiểm tra driver JDBC
+Bạn cần có file .jar tên giống:
+
+Sao chép
+Chỉnh sửa
+mssql-jdbc-12.2.0.jre11.jar
+→ Phải add vào NetBeans:
+
+Chuột phải project > Properties > Libraries > Add JAR/Folder
+
+✅ Tổng kết
+Bước	Mục tiêu
+✅ B1	Cập nhật DBContext để hiển thị lỗi
+✅ B2	Chạy file TestConnection.java để kiểm tra độc lập
+✅ B3	Kiểm tra SQL Server: user as, quyền, port
+✅ B4	Kiểm tra JDBC .jar đã add chưa
+
+❓Bạn muốn gì tiếp?
+Mình gửi cho bạn 1 project NetBeans mẫu đã kết nối sẵn?
+
+Bạn gửi mình file AccountDBContext.java, mình sửa giúp phần connection.isClosed()?
+
+Hay bạn gửi ảnh lỗi TestConnection.java để mình phân tích?
+
+Bạn chọn hướng nhé, mình theo sát đến khi chạy được thì thôi.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+tạo trang khi đi request được chấp thuận or bác bỏ  thì chuyển về lít và user nhìn thấy được chấp thuận or bác bỏ http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/process?id=7&decision=yes
+
+
+ChatGPT đã nói:
+Rất tốt! Bạn đang muốn tạo một chức năng xử lý yêu cầu nghỉ phép (RFL), theo đường dẫn như sau:
+
+bash
+Sao chép
+Chỉnh sửa
+http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/process?id=7&decision=yes
+🎯 Mục tiêu:
+Admin hoặc người được phân quyền sẽ click xử lý request (chấp thuận hoặc bác bỏ)
+
+Sau khi xử lý xong → chuyển hướng về danh sách (list) để người dùng thấy kết quả
+
+✅ Các bước bạn cần làm:
+📌 1. Tạo ProcessController.java trong controller.rfl
+java
+Sao chép
+Chỉnh sửa
+package controller.rfl;
+
+import controller.authentication.BaseRBACController;
+import dal.RequestForLeaveDBContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import model.Account;
+import model.RequestForLeave;
+
+public class ProcessController extends BaseRBACController {
+
+    @Override
+    protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account)
+            throws ServletException, IOException {
+
+        int id = Integer.parseInt(req.getParameter("id"));
+        String decision = req.getParameter("decision"); // yes | no
+
+        RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+        RequestForLeave rfl = db.get(id); // lấy request cần xử lý
+
+        if (rfl != null) {
+            if (decision.equalsIgnoreCase("yes")) {
+                rfl.setStatus("Approved");
+            } else {
+                rfl.setStatus("Rejected");
+            }
+            db.updateStatus(rfl);
+        }
+
+        // Chuyển về danh sách sau khi xử lý
+        resp.sendRedirect("list");
+    }
+
+    @Override
+    protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account)
+            throws ServletException, IOException {
+        processGet(req, resp, account); // xử lý như GET
+    }
+}
+📌 2. Trong RequestForLeaveDBContext.java, thêm method sau:
+java
+Sao chép
+Chỉnh sửa
+public void updateStatus(RequestForLeave rfl) {
+    try {
+        String sql = "UPDATE RequestForLeave SET status = ? WHERE id = ?";
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setString(1, rfl.getStatus());
+        stm.setInt(2, rfl.getId());
+        stm.executeUpdate();
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+}
+📌 3. Trong RequestForLeave.java, đảm bảo có:
+java
+Sao chép
+Chỉnh sửa
+private String status;
+private int id;
+
+public int getId() {
+    return id;
+}
+
+public void setId(int id) {
+    this.id = id;
+}
+
+public String getStatus() {
+    return status;
+}
+
+public void setStatus(String status) {
+    this.status = status;
+}
+📌 4. Trong list.jsp hiển thị trạng thái
+Trong bảng hiển thị danh sách request, thêm cột:
+
+jsp
+Sao chép
+Chỉnh sửa
+<td><%= r.getStatus() %></td>
+📌 5. Thêm link xử lý (approve / reject)
+Trong danh sách admin thấy, bạn có thể thêm:
+
+jsp
+Sao chép
+Chỉnh sửa
+<a href="process?id=<%= r.getId() %>&decision=yes">Approve</a> |
+<a href="process?id=<%= r.getId() %>&decision=no">Reject</a>
+✅ Kết quả mong đợi:
+Người có quyền duyệt → bấm Approve/Reject
+
+Dữ liệu trong DB được cập nhật
+
+Redirect về /rfl/list
+
+Trạng thái của request được hiển thị là "Approved" hoặc "Rejected"
+
+❓Bạn cần mình:
+Tạo file mẫu ProcessController.java hoàn chỉnh?
+
+Tạo luôn link Approve/Reject trong list.jsp?
+
+Tạo view riêng để xem chi tiết từng request trước khi xử lý?
+
+Bạn muốn làm phần nào tiếp, mình giúp chi tiết.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+rfl.setStatus("Approved");
+            } else {
+                rfl.setStatus("Rejected");
+            }
+            db.updateStatus(rfl); 
+
+
+string can conveted to int error
+
+
+ChatGPT đã nói:
+Rất rõ! Lỗi bạn gặp là:
+
+❌ String cannot be converted to int khi gọi:
+
+java
+Sao chép
+Chỉnh sửa
+rfl.setStatus("Approved"); // hoặc "Rejected"
+🎯 Nguyên nhân
+Trong class RequestForLeave, method setStatus(...) đang khai báo kiểu int thay vì String.
+→ Mà bạn lại truyền "Approved" hoặc "Rejected" (kiểu String) vào → gây lỗi.
+
+✅ Cách sửa
+🔧 1. Mở file RequestForLeave.java
+Tìm phần khai báo biến status, sửa như sau:
+
+java
+Sao chép
+Chỉnh sửa
+private String status;
+Rồi cập nhật getter/setter đúng kiểu String:
+
+java
+Sao chép
+Chỉnh sửa
+public String getStatus() {
+    return status;
+}
+
+public void setStatus(String status) {
+    this.status = status;
+}
+🧠 Giải thích
+Trước (lỗi)	Sau (đúng)
+private int status;	private String status;
+setStatus(int status)	setStatus(String status)
+
+✅ 2. Kiểm tra DB (cột status)
+Đảm bảo cột status trong bảng RequestForLeave trong SQL Server là kiểu:
+
+sql
+Sao chép
+Chỉnh sửa
+VARCHAR(20) -- hoặc NVARCHAR(20)
+Nếu vẫn đang là INT, bạn cần đổi cột:
+
+sql
+Sao chép
+Chỉnh sửa
+ALTER TABLE RequestForLeave
+ALTER COLUMN status VARCHAR(20);
+✅ Tổng kết
+Việc cần sửa	Ghi chú
+status trong Java → đổi thành String	Để gán "Approved" hoặc "Rejected"
+status trong DB → VARCHAR	Để lưu chuỗi đúng
+Sau đó: rfl.setStatus("Approved") sẽ hoạt động bình thường	✅
+
+Nếu bạn muốn mình kiểm tra luôn RequestForLeave.java hoặc gửi sẵn file sửa lại, mình có thể giúp ngay. Bạn có cần mình viết lại đầy đủ ProcessController sau khi sửa không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+private String title;
+    private String reason;
+    private Date from;
+    private Date to;
+    private int status;
+    private Account createdby;
+    private Account processedby;
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã cung cấp định nghĩa class RequestForLeave. Như vậy bạn đang khai báo:
+
+java
+Sao chép
+Chỉnh sửa
+private int status;
+Và bạn đang cố gắng thực hiện:
+
+java
+Sao chép
+Chỉnh sửa
+rfl.setStatus("Approved"); // ❌ lỗi vì status là int
+✅ Giải pháp 1: Giữ status là int (nên dùng nếu dùng trong hệ thống chuẩn)
+Sử dụng quy ước số:
+
+Status (int)	Ý nghĩa
+0	Pending
+1	Approved
+2	Rejected
+
+→ Trong code:
+
+java
+Sao chép
+Chỉnh sửa
+if (decision.equalsIgnoreCase("yes")) {
+    rfl.setStatus(1); // Approved
+} else {
+    rfl.setStatus(2); // Rejected
+}
+Khi hiển thị ra list.jsp thì chuyển int → String:
+
+jsp
+Sao chép
+Chỉnh sửa
+<%
+    String statusStr = "";
+    if (r.getStatus() == 0) statusStr = "Pending";
+    else if (r.getStatus() == 1) statusStr = "Approved";
+    else if (r.getStatus() == 2) statusStr = "Rejected";
+%>
+<td><%= statusStr %></td>
+✅ Giải pháp 2: Đổi status sang String
+Chỉ nên làm nếu bạn muốn lưu thẳng "Approved" / "Rejected" trong database.
+
+Trong RequestForLeave.java:
+
+java
+Sao chép
+Chỉnh sửa
+private String status;
+→ Sử dụng:
+
+java
+Sao chép
+Chỉnh sửa
+rfl.setStatus("Approved");
+và bảng RequestForLeave cần sửa cột status sang VARCHAR:
+
+sql
+Sao chép
+Chỉnh sửa
+ALTER TABLE RequestForLeave
+ALTER COLUMN status VARCHAR(20);
+✅ Gợi ý: Nên dùng int status để tiện xử lý logic, so sánh, lọc theo WHERE status = 1
+✅ Kết luận
+Mục tiêu của bạn	Cách làm
+Dùng số nguyên 0/1/2 để biểu diễn	✅ Giữ int status, gán setStatus(1)
+Muốn lưu chuỗi "Approved"	Đổi status sang String và đổi DB column
+
+❓Bạn chọn giải pháp nào?
+Nếu bạn chọn giữ int, mình sẽ giúp bạn sửa toàn bộ controller, JSP và DAO theo hướng đó.
+
+Nếu bạn chọn String, mình sẽ giúp đổi cột DB + sửa Java.
+
+Bạn muốn chọn hướng nào?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+giai phap 1 
+
+
+ChatGPT đã nói:
+Tuyệt vời, bạn chọn Giải pháp 1: sử dụng int status với quy ước 0 = Pending, 1 = Approved, 2 = Rejected.
+
+Mình sẽ hướng dẫn chi tiết cách chỉnh toàn bộ hệ thống (Controller + DAO + JSP) theo hướng này.
+
+✅ 1. Quy ước status
+Giá trị status	Ý nghĩa hiển thị
+0	Pending
+1	Approved
+2	Rejected
+
+✅ 2. RequestForLeave.java — để nguyên
+Không cần sửa gì vì bạn đã có:
+
+java
+Sao chép
+Chỉnh sửa
+private int status;
+
+public int getStatus() {
+    return status;
+}
+
+public void setStatus(int status) {
+    this.status = status;
+}
+✅ 3. ProcessController.java
+🛠 Sửa đoạn xử lý quyết định:
+java
+Sao chép
+Chỉnh sửa
+@Override
+protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account)
+        throws ServletException, IOException {
+
+    int id = Integer.parseInt(req.getParameter("id"));
+    String decision = req.getParameter("decision"); // yes | no
+
+    RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+    RequestForLeave rfl = db.get(id); // lấy request từ DB
+
+    if (rfl != null) {
+        if (decision.equalsIgnoreCase("yes")) {
+            rfl.setStatus(1); // Approved
+        } else {
+            rfl.setStatus(2); // Rejected
+        }
+        db.updateStatus(rfl);
+    }
+
+    // Redirect về list
+    resp.sendRedirect("list");
+}
+✅ 4. RequestForLeaveDBContext.java — thêm hàm updateStatus
+java
+Sao chép
+Chỉnh sửa
+public void updateStatus(RequestForLeave rfl) {
+    try {
+        String sql = "UPDATE RequestForLeave SET status = ?, processedby = ? WHERE id = ?";
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setInt(1, rfl.getStatus());
+        stm.setInt(2, rfl.getProcessedby().getId()); // bạn nên set processedby trước khi gọi update
+        stm.setInt(3, rfl.getId());
+        stm.executeUpdate();
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+}
+💡 Trước khi gọi db.updateStatus(rfl), bạn nên set processedby từ account hiện tại.
+
+✅ 5. list.jsp — hiển thị trạng thái đúng theo số
+Tìm dòng:
+
+jsp
+Sao chép
+Chỉnh sửa
+<td><%= r.getStatus() %></td>
+Sửa thành:
+
+jsp
+Sao chép
+Chỉnh sửa
+<%
+    String statusStr = "";
+    if (r.getStatus() == 0) statusStr = "Pending";
+    else if (r.getStatus() == 1) statusStr = "Approved";
+    else if (r.getStatus() == 2) statusStr = "Rejected";
+%>
+<td><%= statusStr %></td>
+✅ 6. Thêm link xử lý yêu cầu trong list.jsp (chỉ dành cho người xử lý)
+Thêm cột:
+
+jsp
+Sao chép
+Chỉnh sửa
+<%
+    if (r.getStatus() == 0) {
+%>
+    <td>
+        <a href="process?id=<%= r.getId() %>&decision=yes">Approve</a> |
+        <a href="process?id=<%= r.getId() %>&decision=no">Reject</a>
+    </td>
+<%
+    } else {
+%>
+    <td>Processed</td>
+<%
+    }
+%>
+✅ 7. Database: Cột status là int
+Trong SQL Server, đảm bảo:
+
+sql
+Sao chép
+Chỉnh sửa
+ALTER TABLE RequestForLeave
+ALTER COLUMN status INT;
+✅ Tổng kết: Các phần đã xử lý
+File	Việc đã làm
+RequestForLeave.java	Dùng int status
+ProcessController.java	Gán status = 1/2 theo decision
+RequestForLeaveDBContext.java	Thêm hàm updateStatus
+list.jsp	Hiển thị status đúng ý nghĩa
+DB	Đảm bảo cột status là INT
+
+Bạn đã hoàn toàn có thể xử lý trạng thái yêu cầu nghỉ phép ✔️
+Nếu muốn mình kiểm tra lại toàn bộ controller hoặc gửi lại file mẫu đã chỉnh, bạn nói nhé.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+ db.updateStatus(rfl); cannot find symbol 
+
+
+ChatGPT đã nói:
+Lỗi **cannot find symbol: method updateStatus(RequestForLeave)** nghĩa là Java không thấy method updateStatus(...) trong class RequestForLeaveDBContext.
+
+✅ Cách xử lý
+Bạn cần thêm đúng method updateStatus(...) vào file RequestForLeaveDBContext.java.
+
+📌 Mở file: RequestForLeaveDBContext.java
+Thêm method sau vào (nếu chưa có):
+
+java
+Sao chép
+Chỉnh sửa
+public void updateStatus(RequestForLeave rfl) {
+    try {
+        String sql = "UPDATE RequestForLeave SET status = ?, processedby = ? WHERE id = ?";
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setInt(1, rfl.getStatus());
+        stm.setInt(2, rfl.getProcessedby().getId());
+        stm.setInt(3, rfl.getId());
+        stm.executeUpdate();
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+}
+✅ Ngoài ra, trước khi gọi updateStatus(rfl) bạn cần set processedby, ví dụ:
+Trong ProcessController.java:
+
+java
+Sao chép
+Chỉnh sửa
+if (rfl != null) {
+    if (decision.equalsIgnoreCase("yes")) {
+        rfl.setStatus(1); // Approved
+    } else {
+        rfl.setStatus(2); // Rejected
+    }
+    rfl.setProcessedby(account); // cần dòng này để set người xử lý
+    db.updateStatus(rfl);
+}
+🧠 Kiểm tra checklist để không còn lỗi:
+Kiểm tra	Đã có chưa?
+✅ Class RequestForLeaveDBContext có hàm updateStatus(RequestForLeave)	✔️ Thêm như trên
+✅ Biến processedby là Account và đã setProcessedby(account)	✔️ Có
+✅ Có import đầy đủ: import model.RequestForLeave;	✔️ Kiểm tra đầu file
+
+✅ Nếu bạn vẫn lỗi
+Bạn gửi:
+
+Nội dung class RequestForLeaveDBContext.java
+
+Nội dung file RequestForLeave.java
+
+Mình sẽ sửa giúp bạn đầy đủ.
+
+Bạn thử thêm updateStatus(...) như trên rồi build lại nhé. Nếu cần mình dán lại toàn bộ file RequestForLeaveDBContext.java mẫu.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+thêm vào chỗ nào ?
+/* 
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package dal;
+
+import java.util.ArrayList;
+import model.RequestForLeave;
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import model.Account;
+
+/**
+ *
+ * @author p14s
+ */
+public class RequestForLeaveDBContext extends DBContext<RequestForLeave> {
+
+    public ArrayList<RequestForLeave> list(int aid) {
+        ArrayList<RequestForLeave> rfls = new ArrayList<>();
+
+        try {
+            String sql = "WITH RecursiveCTE AS (\n"
+                    + "    -- Anchor member: Start with the given employee\n"
+                    + "    SELECT e.eid, e.ename, e.did, e.bossid\n"
+                    + "    FROM Employee e INNER JOIN Account_Employee ae ON e.eid = ae.eid\n"
+                    + "					INNER JOIN Account a ON a.aid = ae.aid\n"
+                    + "    WHERE a.aid = ?  -- Replace @EmployeeId with the input employee ID\n"
+                    + "\n"
+                    + "    UNION ALL\n"
+                    + "\n"
+                    + "    -- Recursive member: Fetch subordinates\n"
+                    + "    SELECT e.eid, e.ename, e.did, e.bossid\n"
+                    + "    FROM dbo.Employee e\n"
+                    + "    INNER JOIN RecursiveCTE r ON e.bossid = r.eid\n"
+                    + ")\n"
+                    + "SELECT rfl.rid,rfl.title,rfl.reason,rfl.[from], rfl.[to],e.eid,e.ename, a.username as [createdbyname],rfl.createdby,rfl.[status],ap.username as [processbyname],rfl.processedby  \n"
+                    + "FROM RecursiveCTE e INNER JOIN Account_Employee ae ON e.eid = ae.eid\n"
+                    + "					INNER JOIN Account a ON a.aid = ae.aid\n"
+                    + "					INNER JOIN RequestForLeave rfl ON rfl.createdby = a.aid\n"
+                    + "					LEFT JOIN Account ap ON ap.aid = rfl.processedby\n"
+                    + "WHERE a.aid != ?;";
+            PreparedStatement stm = connection.prepareStatement(sql);
+            stm.setInt(1, aid);
+            stm.setInt(2, aid);
+            ResultSet rs = stm.executeQuery();
+            while (rs.next()) {
+                RequestForLeave rfl = new RequestForLeave();
+                rfl.setId(rs.getInt("rid"));
+                rfl.setTitle(rs.getString("title"));
+                rfl.setReason(rs.getString("reason"));
+                rfl.setFrom(rs.getDate("from"));
+                rfl.setTo(rs.getDate("to"));
+                rfl.setStatus(rs.getInt("status"));
+                Account createdby = new Account();
+                createdby.setUsername(rs.getString("createdbyname"));
+                createdby.setId(rs.getInt("createdby"));
+                rfl.setCreatedby(createdby);
+
+                int processdbyid = rs.getInt("processedby");
+                if (processdbyid > 0) {
+                    Account processedby = new Account();
+                    processedby.setUsername(rs.getString("processbyname"));
+                    processedby.setId(rs.getInt("processedby"));
+                    rfl.setProcessedby(processedby);
+                }
+                rfls.add(rfl);
+
+                //rfl.rid,rfl.title,rfl.reason,rfl.[from], rfl.[to],e.eid,e.ename, 
+                //a.username as [createdbyname],rfl.createdby,rfl.[status]
+                //,ap.username as [processbyname],rfl.processedby
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (!connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return rfls;
+    }
+
+    @Override
+    public ArrayList<RequestForLeave> list() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public RequestForLeave get(int id) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void insert(RequestForLeave model) {
+        try {
+            String sql = "INSERT INTO [RequestForLeave]\n"
+                    + "           ([title]\n"
+                    + "           ,[from]\n"
+                    + "           ,[to]\n"
+                    + "           ,[reason]\n"
+                    + "           ,[status]\n"
+                    + "           ,[createdby]\n"
+                    + "           ,[processedby])\n"
+                    + "     VALUES\n"
+                    + "           (?\n"
+                    + "           ,?\n"
+                    + "           ,?\n"
+                    + "           ,?\n"
+                    + "           ,0\n"
+                    + "           ,?\n"
+                    + "           ,NULL)";
+            
+            PreparedStatement stm = connection.prepareStatement(sql);
+            stm.setString(1, model.getTitle());
+            stm.setDate(2, model.getFrom());
+            stm.setDate(3, model.getTo());
+            stm.setString(4, model.getReason());
+            stm.setInt(5, model.getCreatedby().getId());
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            try {
+                if (!connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+                    
+        
+
+    }
+
+    @Override
+    public void update(RequestForLeave model) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void delete(RequestForLeave model) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+}
+
+
+ChatGPT đã nói:
+Cảm ơn bạn đã gửi đầy đủ code của RequestForLeaveDBContext.java. Bây giờ để thêm method updateStatus(...) giúp xử lý yêu cầu nghỉ phép được duyệt hoặc từ chối, bạn làm như sau:
+
+✅ Thêm updateStatus() vào cuối class
+📌 Chèn ngay phía trên dòng đóng } cuối cùng của class:
+java
+Sao chép
+Chỉnh sửa
+    public void updateStatus(RequestForLeave rfl) {
+        try {
+            String sql = "UPDATE RequestForLeave SET status = ?, processedby = ? WHERE rid = ?";
+            PreparedStatement stm = connection.prepareStatement(sql);
+            stm.setInt(1, rfl.getStatus());
+            stm.setInt(2, rfl.getProcessedby().getId());
+            stm.setInt(3, rfl.getId());
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+✅ Sau khi thêm xong, file sẽ kết thúc như sau:
+java
+Sao chép
+Chỉnh sửa
+    @Override
+    public void delete(RequestForLeave model) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void updateStatus(RequestForLeave rfl) {
+        try {
+            String sql = "UPDATE RequestForLeave SET status = ?, processedby = ? WHERE rid = ?";
+            PreparedStatement stm = connection.prepareStatement(sql);
+            stm.setInt(1, rfl.getStatus());
+            stm.setInt(2, rfl.getProcessedby().getId());
+            stm.setInt(3, rfl.getId());
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+}
+✅ Chú ý:
+Tên cột ID của bảng là rid, không phải id, nên trong WHERE rid = ? là đúng.
+
+Bạn cần đảm bảo rằng khi gọi updateStatus(), bạn đã gọi:
+
+java
+Sao chép
+Chỉnh sửa
+rfl.setProcessedby(account); // account đang đăng nhập
+rfl.setStatus(1); // hoặc 2
+rfl.setId(giá trị rid trong DB);
+Bạn hãy thêm method updateStatus(...) như trên, rồi chạy lại Servlet /rfl/process?id=7&decision=yes.
+Nếu muốn mình kiểm tra thêm Controller hoặc JSP, gửi tiếp mình hỗ trợ nhé!
+
+
+
+
+
+
+
+
+Bạn đã nói:
+http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/process?id=7&decision=yes
+HTTP Status 404 – Not Found
+Type Status Report
+
+Message The requested resource [/PRJ301_SUMMER2025_A42/rfl/process] is not available
+
+Description The origin server did not find a current representation for the target resource or is not willing to disclose that one exists.
+
+Apache Tomcat/10.1.40
+
+
+ChatGPT đã nói:
+Lỗi bạn gặp:
+
+❌ HTTP Status 404 – The requested resource [/PRJ301_SUMMER2025_A42/rfl/process] is not available
+
+✅ Nghĩa là gì?
+Tomcat không tìm thấy servlet nào mapping với URL /rfl/process.
+
+✅ Cách khắc phục
+Bạn cần đảm bảo 3 thứ sau:
+
+✅ 1. Servlet ProcessController đã tồn tại
+File: controller/rfl/ProcessController.java
+
+Nội dung mẫu:
+
+java
+Sao chép
+Chỉnh sửa
+package controller.rfl;
+
+import controller.authentication.BaseRBACController;
+import dal.RequestForLeaveDBContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import model.Account;
+import model.RequestForLeave;
+
+public class ProcessController extends BaseRBACController {
+
+    @Override
+    protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account)
+            throws ServletException, IOException {
+
+        int id = Integer.parseInt(req.getParameter("id"));
+        String decision = req.getParameter("decision");
+
+        RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+        RequestForLeave rfl = db.get(id);
+
+        if (rfl != null) {
+            rfl.setStatus(decision.equals("yes") ? 1 : 2);
+            rfl.setProcessedby(account);
+            rfl.setId(id); // chắc chắn phải set id
+            db.updateStatus(rfl);
+        }
+
+        resp.sendRedirect("list");
+    }
+
+    @Override
+    protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account)
+            throws ServletException, IOException {
+        processGet(req, resp, account);
+    }
+}
+✅ 2. Servlet đã được cấu hình đúng trong web.xml
+Mở file web/WEB-INF/web.xml và kiểm tra hoặc thêm:
+
+xml
+Sao chép
+Chỉnh sửa
+<servlet>
+    <servlet-name>rfl_process</servlet-name>
+    <servlet-class>controller.rfl.ProcessController</servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>rfl_process</servlet-name>
+    <url-pattern>/rfl/process</url-pattern>
+</servlet-mapping>
+✅ 3. Clean & Build lại Project
+Sau khi sửa hoặc thêm servlet:
+
+Click chuột phải project > Clean and Build
+
+Khởi động lại Tomcat
+
+✅ Kiểm tra sau khi sửa
+Truy cập lại:
+
+bash
+Sao chép
+Chỉnh sửa
+http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/process?id=7&decision=yes
+Nó sẽ gọi ProcessController, cập nhật trạng thái, và chuyển về /rfl/list.
+
+🧠 Nếu vẫn lỗi
+Bạn có thể:
+
+Gửi mình web.xml
+
+Gửi mình cấu trúc thư mục controller
+→ Mình sẽ chỉ rõ xem thiếu phần nào.
+
+Bạn muốn mình tạo sẵn web.xml cho servlet này không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <servlet>
+        <servlet-name>LoginController</servlet-name>
+        <servlet-class>controller.authentication.LoginController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>InsertDummyController</servlet-name>
+        <servlet-class>controller.dummy.InsertController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UpdateDummyController</servlet-name>
+        <servlet-class>controller.dummy.UpdateController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DeleteDummyController</servlet-name>
+        <servlet-class>controller.dummy.DeleteController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HomeController</servlet-name>
+        <servlet-class>controller.home.HomeController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ListController</servlet-name>
+        <servlet-class>controller.rfl.ListController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateRFLController</servlet-name>
+        <servlet-class>controller.rfl.CreateController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginController</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>InsertDummyController</servlet-name>
+        <url-pattern>/dummy/insert</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UpdateDummyController</servlet-name>
+        <url-pattern>/dummy/update</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteDummyController</servlet-name>
+        <url-pattern>/dummy/delete</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HomeController</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ListController</servlet-name>
+        <url-pattern>/rfl/list</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateRFLController</servlet-name>
+        <url-pattern>/rfl/create</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+</web-app> where to add 2. 
+
+
+ChatGPT đã nói:
+Tuyệt vời, cảm ơn bạn đã gửi web.xml. Hiện tại bạn chưa khai báo ProcessController, nên truy cập /rfl/process sẽ bị lỗi 404.
+
+✅ Cách thêm ProcessController vào web.xml
+Bạn thêm 2 khối sau vào đúng vị trí, tương tự như các servlet khác:
+
+📌 1. Khai báo servlet (thêm phía dưới các <servlet> khác):
+xml
+Sao chép
+Chỉnh sửa
+<servlet>
+    <servlet-name>ProcessRFLController</servlet-name>
+    <servlet-class>controller.rfl.ProcessController</servlet-class>
+</servlet>
+📌 2. Khai báo đường dẫn mapping (thêm phía dưới các <servlet-mapping> khác):
+xml
+Sao chép
+Chỉnh sửa
+<servlet-mapping>
+    <servlet-name>ProcessRFLController</servlet-name>
+    <url-pattern>/rfl/process</url-pattern>
+</servlet-mapping>
+✅ Sau khi thêm xong, file web.xml sẽ chứa thêm 2 đoạn này:
+📌 Đoạn đầy đủ bạn cần thêm:
+xml
+Sao chép
+Chỉnh sửa
+<!-- Add this inside <web-app> ... before </web-app> -->
+<servlet>
+    <servlet-name>ProcessRFLController</servlet-name>
+    <servlet-class>controller.rfl.ProcessController</servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>ProcessRFLController</servlet-name>
+    <url-pattern>/rfl/process</url-pattern>
+</servlet-mapping>
+✅ Tổng kết
+Việc cần làm	Trạng thái
+Thêm ProcessController vào web.xml	✅ Đã hướng dẫn
+Build lại project (Clean and Build)	✅ Bắt buộc
+Khởi động lại Tomcat (nếu cần)	✅ Nên làm
+
+Sau đó, bạn có thể test lại link:
+
+bash
+Sao chép
+Chỉnh sửa
+http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/process?id=7&decision=yes
+→ Hệ thống sẽ xử lý và chuyển hướng về /rfl/list.
+
+Nếu bạn muốn, mình có thể gửi lại toàn bộ đoạn web.xml sau khi chèn xong. Bạn muốn mình làm giúp không?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+HTTP Status 500 – Internal Server Error
+Type Exception Report
+
+Message Not supported yet.
+
+Description The server encountered an unexpected condition that prevented it from fulfilling the request.
+
+Exception
+
+java.lang.UnsupportedOperationException: Not supported yet.
+	dal.RequestForLeaveDBContext.get(RequestForLeaveDBContext.java:95)
+	controller.rfl.ProcessController.processGet(ProcessController.java:30)
+	controller.authentication.BaseRBACController.doGet(BaseRBACController.java:68)
+	controller.authentication.BaseRequiredAuthenticationController.doGet(BaseRequiredAuthenticationController.java:56)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+Note The full stack trace of the root cause is available in the server logs.
+
+Apache Tomcat/10.1.40
+
+http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/process?id=9&decision=yes
+với cả tôi nhấn no mà sao đường dẫn lại yes?
+
+
+ChatGPT đã nói:
+Đã cập nhật bộ nhớ đã lưu
+Bạn đang gặp hai vấn đề khác nhau, mình sẽ xử lý từng cái một:
+
+❌ 1. Lỗi Not supported yet.
+📌 Nguyên nhân:
+Method get(int id) trong class RequestForLeaveDBContext.java chưa được implement, mà chỉ có dòng:
+
+java
+Sao chép
+Chỉnh sửa
+@Override
+public RequestForLeave get(int id) {
+    throw new UnsupportedOperationException("Not supported yet.");
+}
+→ Vì ProcessController đang gọi db.get(id); nên nó bị lỗi ngay tại đó.
+
+✅ Cách khắc phục:
+Bạn cần viết hàm get(int id) đầy đủ.
+
+🔧 Thêm đoạn code này thay thế method get(...) hiện tại:
+java
+Sao chép
+Chỉnh sửa
+@Override
+public RequestForLeave get(int id) {
+    RequestForLeave rfl = null;
+    try {
+        String sql = "SELECT rid, title, reason, [from], [to], status, createdby, processedby "
+                   + "FROM RequestForLeave WHERE rid = ?";
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setInt(1, id);
+        ResultSet rs = stm.executeQuery();
+        if (rs.next()) {
+            rfl = new RequestForLeave();
+            rfl.setId(rs.getInt("rid"));
+            rfl.setTitle(rs.getString("title"));
+            rfl.setReason(rs.getString("reason"));
+            rfl.setFrom(rs.getDate("from"));
+            rfl.setTo(rs.getDate("to"));
+            rfl.setStatus(rs.getInt("status"));
+
+            Account createdBy = new Account();
+            createdBy.setId(rs.getInt("createdby"));
+            rfl.setCreatedby(createdBy);
+
+            int processedById = rs.getInt("processedby");
+            if (processedById > 0) {
+                Account processedBy = new Account();
+                processedBy.setId(processedById);
+                rfl.setProcessedby(processedBy);
+            }
+        }
+    } catch (SQLException ex) {
+        Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+    } finally {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RequestForLeaveDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    return rfl;
+}
+✅ 2. Câu hỏi: “Tôi nhấn No mà đường dẫn lại là ?decision=yes?”
+🧠 Giải thích:
+Khi bạn click nút hoặc link trong HTML/JSP, thì đường dẫn bạn thấy là do code quy định.
+
+Bạn cần tìm trong list.jsp hay nơi bạn có link kiểu:
+
+jsp
+Sao chép
+Chỉnh sửa
+<a href="process?id=<%= r.getId() %>&decision=yes">Approve</a> |
+<a href="process?id=<%= r.getId() %>&decision=no">Reject</a>
+→ Có thể bạn bấm nhầm link Approve, hoặc logic render bị nhầm.
+
+✅ Hành động:
+Kiểm tra list.jsp hoặc nơi chứa 2 link yes/no → đảm bảo:
+
+jsp
+Sao chép
+Chỉnh sửa
+<a href="process?id=<%= r.getId() %>&decision=yes">Approve</a>
+<a href="process?id=<%= r.getId() %>&decision=no">Reject</a>
+Hoặc dùng <form> nếu bạn muốn làm rõ hơn.
+
+✅ Tổng kết cần làm ngay
+Việc	Hành động
+Fix lỗi Not supported yet.	Cài đặt get(int id) như trên
+Nhấn No ra Yes?	Kiểm tra list.jsp, kiểm tra href có đúng &decision=no chưa
+
+Bạn muốn mình gửi lại toàn bộ file RequestForLeaveDBContext.java đã ghép sẵn luôn không? Hoặc file ProcessController.java mẫu chuẩn?
+
+Tuyệt vời. Mình sẽ giúp bạn giải quyết cả hai yêu cầu rõ ràng:
+
+✅ 1. Phân biệt user trong trang /rfl/list để hiện đúng giao diện
+🎯 Mục tiêu:
+Nếu user đang đăng nhập là người xử lý (ví dụ: sonnt), thì hiển thị nút Approve / Reject.
+
+Nếu là user thường (người tạo request), thì chỉ thấy dòng trạng thái: Pending / Approved / Rejected.
+
+🛠 Giải pháp:
+Bước 1: Trong ListController.java, thêm account hiện tại vào request:
+
+java
+Sao chép
+Chỉnh sửa
+req.setAttribute("account", account); // thêm dòng này vào trước forward
+req.getRequestDispatcher("../view/rfl/list.jsp").forward(req, resp);
+Bước 2: Trong list.jsp, kiểm tra nếu account.username.equals("sonnt") thì mới hiển thị nút xử lý:
+
+⚙ Thay đoạn này:
+jsp
+Sao chép
+Chỉnh sửa
+<%
+    if (r.getStatus() == 0) {
+%>
+    <td>
+        <a href="process?id=<%= r.getId() %>&decision=yes">Approve</a> |
+        <a href="process?id=<%= r.getId() %>&decision=no">Reject</a>
+    </td>
+<%
+    } else {
+%>
+    <td>Processed</td>
+<%
+    }
+%>
+✅ Thành đoạn này:
+jsp
+Sao chép
+Chỉnh sửa
+<%
+    model.Account account = (model.Account) request.getAttribute("account");
+    String statusStr = "";
+    if (r.getStatus() == 0) statusStr = "Pending";
+    else if (r.getStatus() == 1) statusStr = "Approved";
+    else if (r.getStatus() == 2) statusStr = "Rejected";
+%>
+<td>
+<%
+    if (r.getStatus() == 0 && account.getUsername().equals("sonnt")) {
+%>
+        <a href="process?id=<%= r.getId() %>&decision=yes">Approve</a> |
+        <a href="process?id=<%= r.getId() %>&decision=no">Reject</a>
+<%
+    } else {
+%>
+        <%= statusStr %>
+<%
+    }
+%>
+</td>
+✅ 2. Khi sonnt nhấn Yes/No, trang không chuyển → Khắc phục
+🎯 Mục tiêu:
+Khi sonnt nhấn link Yes/No, hệ thống xử lý và chuyển lại /rfl/list.
+
+✅ Đảm bảo 2 điều trong ProcessController.java:
+java
+Sao chép
+Chỉnh sửa
+@Override
+protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account)
+        throws ServletException, IOException {
+
+    int id = Integer.parseInt(req.getParameter("id"));
+    String decision = req.getParameter("decision");
+
+    RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+    RequestForLeave rfl = db.get(id);
+
+    if (rfl != null) {
+        rfl.setStatus(decision.equals("yes") ? 1 : 2);
+        rfl.setProcessedby(account);
+        rfl.setId(id);
+        db.updateStatus(rfl);
+    }
+
+    // ✅ Chuyển về danh sách sau khi xử lý
+    resp.sendRedirect("list");
+}
+Nếu vẫn không redirect, kiểm tra lại:
+
+Có lỗi exception không?
+
+Có console log gì không?
+
+Đã map servlet /rfl/process đúng chưa?
+
+✅ 3. Tổng kết những gì bạn cần có:
+File	Việc
+ListController.java	Gửi account vào request.setAttribute("account", account)
+list.jsp	Hiển thị Yes/No nếu account.username == "sonnt", còn lại hiển thị trạng thái
+ProcessController.java	Xử lý GET từ /rfl/process?id=...&decision=... và redirect về list
+web.xml	Có mapping servlet /rfl/process
+
+Bạn muốn mình gửi toàn bộ các file đã chỉnh sẵn: list.jsp, ProcessController, ListController không? Hay muốn test logic role theo Account.role để phân quyền xử lý?
+
+
+
+
+
+
+
+
+Bạn đã nói:
+bước 1 thêm vào post hay get public class ListController extends BaseRBACController {
+    
+    
+    @Override
+    protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+    }
+
+    @Override
+    protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+    }
+    
+
+
+ChatGPT đã nói:
+✅ Bạn cần thêm dòng req.setAttribute("account", account); vào processGet, vì khi người dùng truy cập /rfl/list, đó là request kiểu GET (hiển thị danh sách nghỉ phép).
+
+📌 Cập nhật ListController.java như sau:
+java
+Sao chép
+Chỉnh sửa
+@Override
+protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+    RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+    ArrayList<RequestForLeave> rfls = db.list(account.getId());
+
+    // ✅ Gửi danh sách và tài khoản hiện tại vào JSP
+    req.setAttribute("rfls", rfls);
+    req.setAttribute("account", account);
+
+    req.getRequestDispatcher("../view/rfl/list.jsp").forward(req, resp);
+}
+❌ Không cần làm gì với processPost() nếu bạn không xử lý submit bằng POST.
+✅ Sau đó, ở trong list.jsp, bạn có thể dùng account:
+jsp
+Sao chép
+Chỉnh sửa
+<% model.Account account = (model.Account) request.getAttribute("account"); %>
+→ Để phân quyền hiển thị nút Yes/No hay chỉ hiện trạng thái.
+
+Nếu bạn cần mình gửi lại toàn bộ ListController.java đầy đủ và sạch, mình có thể làm giúp.
+
+
+
+
+
+
+
+
+Bạn đã nói:
+ cannot find symbol 
+RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+        ArrayList<RequestForLeave> rfls = db.list(account.getId());
+
+
+
+2/2
+
+ChatGPT đã nói:
+Lỗi **cannot find symbol** tại dòng:
+
+java
+Sao chép
+Chỉnh sửa
+ArrayList<RequestForLeave> rfls = db.list(account.getId());
+👉 Cho thấy Java không biết kiểu RequestForLeave (hoặc không import ArrayList/RequestForLeaveDBContext).
+
+✅ Cách khắc phục
+Bạn cần đảm bảo import đầy đủ các class ở đầu file ListController.java:
+
+🔧 Thêm các dòng sau đầu file:
+java
+Sao chép
+Chỉnh sửa
+import dal.RequestForLeaveDBContext;
+import model.RequestForLeave;
+import model.Account;
+import java.util.ArrayList;
+✅ Kiểm tra lại sau khi sửa
+Toàn bộ file ListController.java nên giống như sau:
+
+java
+Sao chép
+Chỉnh sửa
+package controller.rfl;
+
+import controller.authentication.BaseRBACController;
+import dal.RequestForLeaveDBContext;
+import model.RequestForLeave;
+import model.Account;
+import java.io.IOException;
+import java.util.ArrayList;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class ListController extends BaseRBACController {
+
+    @Override
+    protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        // Không cần xử lý POST ở đây
+    }
+
+    @Override
+    protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+        ArrayList<RequestForLeave> rfls = db.list(account.getId());
+
+        req.setAttribute("rfls", rfls);
+        req.setAttribute("account", account);
+        req.getRequestDispatcher("../view/rfl/list.jsp").forward(req, resp);
+    }
+}
+✅ Tổng kết
+Việc	Hành động
+Không tìm thấy RequestForLeave	➤ Thêm import model.RequestForLeave;
+Không tìm thấy list(...)	➤ Đảm bảo class RequestForLeaveDBContext có list(int aid)
+Gọi đúng db.list(account.getId())	✔ Đã đúng
+
+Bạn thử lại nhé, nếu vẫn lỗi, chụp hoặc paste dòng lỗi đầy đủ mình xem cho chính xác.
