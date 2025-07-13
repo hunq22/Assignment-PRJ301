@@ -1,0 +1,114 @@
+i want to change so that different user login have a different rfl list that can view and 
+sonnt the master user can rfl/view all 
+"http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/list"
+BaseRequiredAuthenticationController.java
+PDF
+Assignment.pdf
+HomeController.java
+ListController.java
+BaseRBACController.java
+ProcessController.java
+LoginController.java
+CreateController.java
+
+
+To modify the leave request system so that different users see only their own leave requests (or those of their direct reports) and allow a master user (e.g., "sonnt") to view all leave requests, we need to update the ListController.java file. The changes will involve modifying the logic in the RequestForLeaveDBContext class (assumed to be responsible for database operations) and the ListController to filter leave requests based on the logged-in user's account ID and their role as a manager or the master user.
+
+Below is the updated ListController.java that implements this functionality. The changes assume that:
+
+The Account model has a way to check if the user is a manager (e.g., through roles or a specific attribute).
+The RequestForLeaveDBContext class has a method to retrieve leave requests based on user ID, their direct reports, or all requests for the master user.
+The master user ("sonnt") is identified by their username.
+ListController.java
+java
+Sửa trong tệp tin
+•
+Hiển thị nội tuyến
+Explanation of Changes
+Master User Check: The code checks if the logged-in user's username is "sonnt". If true, it calls db.listAll() to retrieve all leave requests in the system.
+Regular User Logic: For non-master users, the code calls db.listForUserAndSubordinates(account.getId()) to fetch only the leave requests created by the user or their direct reports.
+Assumed Methods in RequestForLeaveDBContext:
+listAll(): A new method to retrieve all leave requests (for the master user).
+listForUserAndSubordinates(int userId): A method to retrieve leave requests created by the user (identified by userId) or their direct reports (subordinates), based on the organizational hierarchy.
+Assumptions
+The Account model has a getUsername() method to identify the user (e.g., "sonnt").
+The RequestForLeaveDBContext class needs two new or modified methods:
+listAll(): Retrieves all leave requests from the database.
+listForUserAndSubordinates(int userId): Retrieves leave requests where the createdby field matches the userId or where the createdby user is a subordinate of the userId (based on the organizational hierarchy).
+The database schema includes a way to determine the reporting structure (e.g., a manager_id field in the user or employee table to indicate who reports to whom).
+Suggested Changes to RequestForLeaveDBContext
+To support the new functionality, you need to implement or modify the methods in RequestForLeaveDBContext. Below is a suggested implementation (you would need to add these to your RequestForLeaveDBContext.java file):
+
+RequestForLeaveDBContext.java
+java
+Sửa trong tệp tin
+•
+Hiển thị nội tuyến
+Notes
+Database Schema: The SQL query assumes:
+A RequestForLeave table with columns: id, title, reason, from_date, to_date, status, createdby, processedby.
+An Account table with columns: id, displayname, manager_id (to indicate the reporting hierarchy).
+The manager_id column in the Account table links subordinates to their managers.
+SQL Query for listForUserAndSubordinates:
+The query retrieves leave requests where the createdby is either the userDRAMATICALLY user’s ID (r.createdby = ?) or belongs to their direct reports (r.createdby IN (SELECT id FROM Account WHERE manager_id = ?)).
+Master User Logic: The username "sonnt" is hardcoded as the master user. You may want to make this configurable (e.g., via a role or a specific flag in the Account table).
+URL: The redirect URL in CreateController and ProcessController (resp.sendRedirect("list")) is assumed to map to /rfl/list. If the context path is required, you can use resp.sendRedirect(req.getContextPath() + "/rfl/list") for robustness.
+Testing
+Ensure the database has the correct schema, including the manager_id field in the Account table.
+Test the list endpoint (http://localhost:8080/PRJ301_SUMMER2025_A42/rfl/list) with:
+A regular user account (should see only their own and subordinates' requests).
+The "sonnt" account (should see all requests).
+A manager account (should see their own and subordinates' requests).
+If you need further modifications (e.g., to the JSP files or database schema), please let me know!
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
+package controller.rfl;
+
+import controller.authentication.BaseRBACController;
+import dal.RequestForLeaveDBContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import model.Account;
+import model.RequestForLeave;
+
+/**
+ *
+ * @author p14s
+ */
+public class ListController extends BaseRBACController {
+
+    protected void processRequest(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        RequestForLeaveDBContext db = new RequestForLeaveDBContext();
+        ArrayList<RequestForLeave> rfls;
+
+        // Check if the user is the master user (sonnt)
+        if (account.getUsername().equals("sonnt")) {
+            // Master user can view all leave requests
+            rfls = db.listAll();
+        } else {
+            // Regular users see their own requests and those of their direct reports
+            rfls = db.listForUserAndSubordinates(account.getId());
+        }
+
+        req.setAttribute("rfls", rfls);
+        req.getRequestDispatcher("../view/rfl/list.jsp").forward(req, resp);
+    }
+    
+    @Override
+    protected void processPost(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        processRequest(req, resp, account);
+    }
+
+    @Override
+    protected void processGet(HttpServletRequest req, HttpServletResponse resp, Account account) throws ServletException, IOException {
+        processRequest(req, resp, account);
+    }
+}
