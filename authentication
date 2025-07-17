@@ -1,0 +1,207 @@
+trong login.jsp hay add 1 cai authentication catcha gen ra random char roi user phai nhap vao đúng những char mà đã gen random ra được
+
+
+Để thêm một CAPTCHA (hình ảnh xác thực) vào login.jsp với các ký tự ngẫu nhiên mà người dùng phải nhập đúng, chúng ta cần thực hiện các bước sau:
+
+Tạo một Servlet để tạo và trả về CAPTCHA: Servlet này sẽ tạo chuỗi ký tự ngẫu nhiên, vẽ chúng lên hình ảnh, lưu chuỗi vào session để so sánh, và trả về hình ảnh dưới dạng PNG.
+Cập nhật login.jsp: Thêm hình ảnh CAPTCHA và trường nhập liệu để người dùng nhập mã CAPTCHA.
+Cập nhật LoginController.java: Kiểm tra mã CAPTCHA nhập vào so với giá trị lưu trong session.
+Dưới đây là mã nguồn cho từng phần, tích hợp với các tệp bạn đã cung cấp.
+
+1. Servlet: CaptchaServlet.java
+Tệp này tạo hình ảnh CAPTCHA với ký tự ngẫu nhiên.
+
+CaptchaServlet.java
+java
+package controller.authentication;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Random;
+
+public class CaptchaServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Thiết lập đầu ra là hình ảnh
+        resp.setContentType("image/png");
+
+        // Tạo hình ảnh CAPTCHA
+        int width = 150;
+        int height = 50;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = image.createGraphics();
+
+        // Điền nền trắng
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, width, height);
+
+        // Tạo chuỗi ngẫu nhiên (4 ký tự)
+        String captcha = generateRandomCaptcha(4);
+        HttpSession session = req.getSession();
+        session.setAttribute("captcha", captcha); // Lưu vào session để kiểm tra sau
+
+        // Thiết lập font và màu cho text
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+
+        // Vẽ chuỗi lên hình ảnh
+        g2d.drawString(captcha, 20, 30);
+
+        // Thêm nhiễu (tùy chọn)
+        Random r = new Random();
+        for (int i = 0; i < 20; i++) {
+            g2d.setColor(new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)));
+            g2d.drawLine(r.nextInt(width), r.nextInt(height), r.nextInt(width), r.nextInt(height));
+        }
+
+        // Gửi hình ảnh ra đầu ra
+        OutputStream os = resp.getOutputStream();
+        javax.imageio.ImageIO.write(image, "png", os);
+        os.close();
+    }
+
+    private String generateRandomCaptcha(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random rand = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(characters.charAt(rand.nextInt(characters.length())));
+        }
+        return sb.toString();
+    }
+}
+•
+Hiển thị nội tuyến
+Location: src/main/java/controller/authentication/CaptchaServlet.java
+Web.xml: Ánh xạ URL /captcha:
+xml
+<servlet>
+    <servlet-name>CaptchaServlet</servlet-name>
+    <servlet-class>controller.authentication.CaptchaServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>CaptchaServlet</servlet-name>
+    <url-pattern>/captcha</url-pattern>
+</servlet-mapping>
+2. Cập nhật login.jsp
+Thêm hình ảnh CAPTCHA và trường nhập liệu.
+
+login.jsp
+html
+Sửa trong tệp tin
+•
+Hiển thị nội tuyến
+Location: web/view/authentication/login.jsp
+Thay đổi:
+Thêm <img src="${pageContext.request.contextPath}/captcha"> để hiển thị CAPTCHA.
+Thêm <input type="text" name="captchaInput"> để người dùng nhập mã.
+3. Cập nhật LoginController.java
+Kiểm tra mã CAPTCHA trước khi xác thực.
+
+LoginController.java
+/*
+ * Click nfs://netbeans/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nfs://netbeans/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package controller.authentication;
+
+import dal.AccountDBContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import model.Account;
+import model.Employee;
+
+/**
+ *
+ * @author p14s
+ */
+public class LoginController extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String captchaInput = req.getParameter("captchaInput");
+        
+        HttpSession session = req.getSession();
+        String captcha = (String) session.getAttribute("captcha");
+        
+        if (captcha == null || !captcha.equalsIgnoreCase(captchaInput)) {
+            req.setAttribute("error", "Invalid CAPTCHA!");
+            req.getRequestDispatcher("view/authentication/login.jsp").forward(req, resp);
+            return;
+        }
+        
+        AccountDBContext db = new AccountDBContext();
+        Account account = db.get(username, password);
+        
+        if (account != null) {
+            account.setEmployee(new Employee()); // Cần logic để tải employee
+            session.setAttribute("account", account);
+            resp.sendRedirect(req.getContextPath() + "/rfl/list");
+        } else {
+            session.setAttribute("account", null);
+            req.setAttribute("error", "Invalid username or password!");
+            req.getRequestDispatcher("view/authentication/login.jsp").forward(req, resp);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("view/authentication/login.jsp").forward(req, resp);
+    }
+}
+•
+Hiển thị nội tuyến
+Thay đổi:
+Kiểm tra captchaInput so với captcha trong session.
+Nếu không khớp, hiển thị lỗi và quay lại trang login.
+4. Tích hợp và Cấu hình
+Web.xml: Đảm bảo ánh xạ /captcha và /login:
+xml
+
+
+
+<servlet>
+    <servlet-name>CaptchaServlet</servlet-name>
+    <servlet-class>controller.authentication.CaptchaServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>CaptchaServlet</servlet-name>
+    <url-pattern>/captcha</url-pattern>
+</servlet-mapping>
+<servlet>
+    <servlet-name>LoginController</servlet-name>
+    <servlet-class>controller.authentication.LoginController</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>LoginController</servlet-name>
+    <url-pattern>/login</url-pattern>
+</servlet-mapping>
+Thư viện: Đảm bảo server (e.g., Tomcat) hỗ trợ Java AWT để tạo hình ảnh.
+Kiểm tra
+Truy cập http://localhost:8080/PRJ301_SUMMER2025_A42/login.
+Xem hình ảnh CAPTCHA được tạo ngẫu nhiên.
+Nhập username, password, và mã CAPTCHA, sau đó gửi form.
+Kiểm tra:
+Nếu CAPTCHA sai, hiển thị lỗi "Invalid CAPTCHA!".
+Nếu đăng nhập thành công, chuyển hướng đến /rfl/list.
+Ghi chú
+Employee.java: Cần một lớp Employee với eid, ename, did, bossid. Nếu chưa có, tạo tại src/main/java/model/Employee.java.
+An toàn: CAPTCHA hiện tại đơn giản. Để tăng bảo mật, có thể thêm nhiễu nhiều hơn hoặc sử dụng thư viện CAPTCHA (e.g., JCaptcha).
+Session: Đảm bảo session không bị xóa giữa các yêu cầu để giữ giá trị captcha.
+Nếu bạn cần hỗ trợ thêm (e.g., Employee.java, tinh chỉnh CAPTCHA), hãy cho tôi biết!
